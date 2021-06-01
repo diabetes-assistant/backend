@@ -36,6 +36,11 @@ jobs:
       - run: ./gradlew dependencies
       - save_gradle_cache
       - run: ./gradlew test
+      - store_artifacts:
+          path: build/reports
+          destination: reports
+      - store_test_results:
+          path: build/test-results
 
   integration_test:
     <<: *java_base
@@ -45,6 +50,11 @@ jobs:
       - run: ./gradlew dependencies
       - save_gradle_cache
       - run: ./gradlew integrationTest
+      - store_artifacts:
+          path: build/reports
+          destination: reports
+      - store_test_results:
+          path: build/test-results
 
 workflows:
   pipeline:
