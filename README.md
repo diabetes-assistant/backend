@@ -1,2 +1,2 @@
-# diabetes-assistant-backend
-Backen for diabetes asssitant
+# Diabetes Assistant Backend
+Backend for the Diabetes Assistant.
