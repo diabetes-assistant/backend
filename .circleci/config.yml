@@ -94,3 +94,8 @@ workflows:
       - unit_test
       - integration_test
       - spotbugs
+      - build:
+          requires:
+            - unit_test
+            - integration_test
+            - spotbugs
