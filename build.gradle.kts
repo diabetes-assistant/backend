@@ -4,6 +4,7 @@ plugins {
     id("io.freefair.lombok") version "6.0.0-m2"
     id("org.springframework.boot") version "2.5.0"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("com.github.spotbugs") version "4.7.1"
 }
 
 repositories {
@@ -33,6 +34,8 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.mockito:mockito-core:3.+")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+
+    spotbugsPlugins("com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1")
 }
 
 group = "com.github.diabetesassistant"
