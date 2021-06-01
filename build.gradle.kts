@@ -5,6 +5,7 @@ plugins {
     id("org.springframework.boot") version "2.5.0"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("com.github.spotbugs") version "4.7.1"
+    id("com.diffplug.spotless") version "5.12.5"
 }
 
 repositories {
@@ -47,6 +48,12 @@ java {
 
 application {
     mainClass.set("com.github.diabetesassistant.App")
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+    }
 }
 
 val integrationTest = task<Test>("integrationTest") {

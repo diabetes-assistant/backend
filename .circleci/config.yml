@@ -70,6 +70,15 @@ jobs:
       - store_test_results:
           path: build/reports/spotbugs
 
+  spotless:
+    <<: *java_base
+    steps:
+      - checkout
+      - restore_gradle_cache
+      - run: ./gradlew dependencies
+      - save_gradle_cache
+      - run: ./gradlew spotlessCheck
+
   build:
     <<: *java_base
     steps:
@@ -123,11 +132,13 @@ workflows:
       - unit_test
       - integration_test
       - spotbugs
+      - spotless
       - build:
           requires:
             - unit_test
             - integration_test
             - spotbugs
+            - spotless
       - deploy_staging:
           requires:
             - build

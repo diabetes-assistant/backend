@@ -6,18 +6,18 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 class ManagementHandlerTest {
-    private ManagementHandler testee;
+  private ManagementHandler testee;
 
-    @BeforeEach
-    void setUp() {
-        this.testee = new ManagementHandler();
-    }
+  @BeforeEach
+  void setUp() {
+    this.testee = new ManagementHandler();
+  }
 
-    @Test
-    void shouldReturnHealthDTOMono() {
-        Mono<HealthStateDTO> actual = this.testee.getHealthState();
-        HealthStateDTO expected = new HealthStateDTO("\uD83D\uDE3B");
+  @Test
+  void shouldReturnHealthDTOMono() {
+    Mono<HealthStateDTO> actual = this.testee.getHealthState();
+    HealthStateDTO expected = new HealthStateDTO("\uD83D\uDE3B");
 
-        StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
-    }
+    StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
+  }
 }

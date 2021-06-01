@@ -7,8 +7,8 @@ import reactor.core.publisher.Mono;
 @RestController
 public class ManagementHandler {
 
-    @GetMapping("/health")
-    public Mono<HealthStateDTO> getHealthState() {
-        return Mono.just(new HealthStateDTO("\uD83D\uDE3B"));
-    }
+  @GetMapping("/health")
+  public Mono<HealthStateDTO> getHealthState() {
+    return Mono.just(new HealthStateDTO("\uD83D\uDE3B"));
+  }
 }
