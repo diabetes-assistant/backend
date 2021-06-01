@@ -10,6 +10,21 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    create("intTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+val intTestImplementation by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+    extendsFrom(configurations.testImplementation.get())
+    extendsFrom(configurations.testRuntimeOnly.get())
+}
+
+configurations["intTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
@@ -29,6 +44,19 @@ java {
 application {
     mainClass.set("com.github.diabetesassistant.App")
 }
+
+val integrationTest = task<Test>("integrationTest") {
+    description = "Runs integration tests."
+    group = "verification"
+
+    useJUnitPlatform()
+
+    testClassesDirs = sourceSets["intTest"].output.classesDirs
+    classpath = sourceSets["intTest"].runtimeClasspath
+    shouldRunAfter("test")
+}
+
+tasks.check { dependsOn(integrationTest) }
 
 tasks.test {
     useJUnitPlatform()
