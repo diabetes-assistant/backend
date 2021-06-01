@@ -19,14 +19,17 @@ commands:
             - "~/.m2"
           key: v1-dependencies-{{ checksum "build.gradle.kts" }}
 
-jobs:
-  test:
+shared_anchors:
+  java_base: &java_base
     docker:
       - image: cimg/openjdk:16.0
     working_directory: ~/repo
     environment:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
+jobs:
+  unit_test:
+    <<: *java_base
     steps:
       - checkout
       - restore_gradle_cache
@@ -34,7 +37,17 @@ jobs:
       - save_gradle_cache
       - run: ./gradlew test
 
+  integration_test:
+    <<: *java_base
+    steps:
+      - checkout
+      - restore_gradle_cache
+      - run: ./gradlew dependencies
+      - save_gradle_cache
+      - run: ./gradlew integrationTest
+
 workflows:
   pipeline:
     jobs:
-      - test
+      - unit_test
+      - integration_test
