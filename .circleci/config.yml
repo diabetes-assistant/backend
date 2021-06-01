@@ -87,6 +87,35 @@ jobs:
           paths:
             - docker
 
+  deploy_staging:
+    machine: true
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Build and push Docker image to Heroku
+          command: |
+            sudo curl https://cli-assets.heroku.com/install.sh | sh
+            heroku container:login
+            cd ~/repo/docker
+            heroku container:push -a staging-diabetes-assistant-be web
+            heroku container:release -a staging-diabetes-assistant-be web
+            curl https://staging-diabetes-assistant-be.herokuapp.com/health
+
+  deploy_live:
+    machine: true
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Build and push Docker image to Heroku
+          command: |
+            sudo curl https://cli-assets.heroku.com/install.sh | sh
+            heroku container:login
+            cd ~/repo/docker
+            heroku container:push -a live-diabetes-assistant-be web
+            heroku container:release -a live-diabetes-assistant-be web
+            curl https://live-diabetes-assistant-be.herokuapp.com/health
 
 workflows:
   pipeline:
@@ -99,3 +128,9 @@ workflows:
             - unit_test
             - integration_test
             - spotbugs
+      - deploy_staging:
+          requires:
+            - build
+      - deploy_live:
+          requires:
+            - deploy_staging
