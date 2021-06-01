@@ -70,6 +70,24 @@ jobs:
       - store_test_results:
           path: build/reports/spotbugs
 
+  build:
+    <<: *java_base
+    steps:
+      - checkout
+      - restore_gradle_cache
+      - run: ./gradlew dependencies
+      - save_gradle_cache
+      - run: ./gradlew bootJar
+      - run:
+          name: Move docker related files
+          command: |
+            mv build/libs/*.jar docker/app.jar
+      - persist_to_workspace:
+          root: ~/repo/
+          paths:
+            - docker
+
+
 workflows:
   pipeline:
     jobs:
