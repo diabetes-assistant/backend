@@ -1,0 +1,57 @@
+openapi: 3.0.1
+info:
+  title: Diabetes Assistant Backend API
+  description: 'This is the backend API for the diabetes assistant'
+  contact:
+    email: danielschruhl@gmail.com
+  license:
+    name: MIT
+    url: https://github.com/diabetes-assistant/backend/blob/main/LICENSE
+  version: 0.1.0
+servers:
+- url: https://staging-diabetes-assistant-be.herokuapp.com/
+- url: https://live-diabetes-assistant-be.herokuapp.com/
+paths:
+  /auth/token:
+    post:
+      summary: Update an existing pet
+      operationId: createToken
+      requestBody:
+        description: UserDTO to create a token for
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDTO'
+        required: true
+      responses:
+        400:
+          description: Supplied data is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    UserDTO:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    ErrorDTO:
+      type: object
+      required:
+      - message
+      properties:
+        message:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
