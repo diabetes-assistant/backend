@@ -29,6 +29,7 @@ configurations["intTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get(
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("com.auth0:java-jwt:3.16.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

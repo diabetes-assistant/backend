@@ -1,22 +1,76 @@
 package com.github.diabetesassistant.presentation;
 
-import com.github.diabetesassistant.domain.AuthService;
-import com.github.diabetesassistant.domain.Tokens;
-import com.github.diabetesassistant.domain.User;
-import lombok.AllArgsConstructor;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTCreationException;
+import com.github.diabetesassistant.domain.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-@AllArgsConstructor
 @RestController
 public class AuthHandler {
   private final AuthService service;
+
+  @Value("${auth.accessTokenSecret}")
+  private String accessTokenSecret;
+
+  @Value("${auth.idTokenSecret}")
+  private String idTokenSecret;
+
+  private final Algorithm accessTokenAlgorithm;
+  private final Algorithm idTokenAlgorithm;
+
+  @Autowired
+  public AuthHandler(AuthService service) {
+    this.service = service;
+    this.accessTokenAlgorithm = Algorithm.HMAC512(this.accessTokenSecret);
+    this.idTokenAlgorithm = Algorithm.HMAC512(this.idTokenSecret);
+  }
+
+  public AuthHandler(AuthService service, String accessTokenSecret, String idTokenSecret) {
+    this.service = service;
+    this.accessTokenSecret = accessTokenSecret;
+    this.idTokenSecret = idTokenSecret;
+    this.accessTokenAlgorithm = Algorithm.HMAC512(this.accessTokenSecret);
+    this.idTokenAlgorithm = Algorithm.HMAC512(this.idTokenSecret);
+  }
 
   @PostMapping("/auth/token")
   public Mono<TokenDTO> createToken(UserDTO userDTO) {
     User user = new User(userDTO.getEmail(), userDTO.getPassword());
     Mono<Tokens> tokens = this.service.authenticate(user);
-    return tokens.map(token -> new TokenDTO(token.getAccessToken(), token.getIdToken()));
+    return tokens.map(this::toDTO);
+  }
+
+  private TokenDTO toDTO(Tokens tokens) throws JWTCreationException {
+    AccessToken accessToken = tokens.getAccessToken();
+    IDToken idToken = tokens.getIdToken();
+    List<String> roles = accessToken
+            .getRoles()
+            .stream()
+            .map(Objects::toString)
+            .collect(Collectors.toList());
+    String userId = accessToken.getUserId().toString();
+    String accessJWT =
+        JWT.create()
+            .withIssuer("diabetes-assistant-backend")
+            .withAudience("diabetes-assistant-client")
+            .withSubject(userId)
+            .withClaim("diabetesAssistant:roles", String.join(",", roles))
+            .sign(this.accessTokenAlgorithm);
+    String idJWT =
+        JWT.create()
+            .withIssuer("diabetes-assistant-backend")
+            .withAudience("diabetes-assistant-client")
+            .withSubject(userId)
+            .withClaim("email", idToken.getEmail())
+            .sign(this.idTokenAlgorithm);
+    return new TokenDTO(accessJWT, idJWT);
   }
 }
