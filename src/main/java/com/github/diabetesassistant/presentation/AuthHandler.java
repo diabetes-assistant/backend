@@ -9,11 +9,19 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
+@RequestMapping(
+    value = "/auth",
+    produces = MediaType.APPLICATION_JSON_VALUE,
+    consumes = MediaType.APPLICATION_JSON_VALUE)
 public class AuthHandler {
   private final AuthService service;
   private final Algorithm accessTokenAlgorithm;
@@ -29,11 +37,14 @@ public class AuthHandler {
     this.idTokenAlgorithm = Algorithm.HMAC512(idTokenSecret);
   }
 
-  @PostMapping("/auth/token")
-  public Mono<TokenDTO> createToken(UserDTO userDTO) {
+  @PostMapping("/token")
+  public Mono<ResponseEntity<?>> createToken(@RequestBody UserDTO userDTO) {
     User user = new User(userDTO.getEmail(), userDTO.getPassword());
     Mono<Tokens> tokens = this.service.authenticate(user);
-    return tokens.map(this::toDTO);
+    return tokens
+        .map(this::toDTO)
+        .<ResponseEntity<?>>map(ResponseEntity::ok)
+        .defaultIfEmpty(ResponseEntity.badRequest().body(new ErrorDTO("Invalid user given")));
   }
 
   private TokenDTO toDTO(Tokens tokens) throws JWTCreationException {
