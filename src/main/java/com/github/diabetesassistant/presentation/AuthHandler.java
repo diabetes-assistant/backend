@@ -16,29 +16,17 @@ import reactor.core.publisher.Mono;
 @RestController
 public class AuthHandler {
   private final AuthService service;
-
-  @Value("${auth.accessTokenSecret}")
-  private String accessTokenSecret;
-
-  @Value("${auth.idTokenSecret}")
-  private String idTokenSecret;
-
   private final Algorithm accessTokenAlgorithm;
   private final Algorithm idTokenAlgorithm;
 
   @Autowired
-  public AuthHandler(AuthService service) {
+  public AuthHandler(
+      AuthService service,
+      @Value("${auth.accessTokenSecret}") String accessTokenSecret,
+      @Value("${auth.idTokenSecret}") String idTokenSecret) {
     this.service = service;
-    this.accessTokenAlgorithm = Algorithm.HMAC512(this.accessTokenSecret);
-    this.idTokenAlgorithm = Algorithm.HMAC512(this.idTokenSecret);
-  }
-
-  public AuthHandler(AuthService service, String accessTokenSecret, String idTokenSecret) {
-    this.service = service;
-    this.accessTokenSecret = accessTokenSecret;
-    this.idTokenSecret = idTokenSecret;
-    this.accessTokenAlgorithm = Algorithm.HMAC512(this.accessTokenSecret);
-    this.idTokenAlgorithm = Algorithm.HMAC512(this.idTokenSecret);
+    this.accessTokenAlgorithm = Algorithm.HMAC512(accessTokenSecret);
+    this.idTokenAlgorithm = Algorithm.HMAC512(idTokenSecret);
   }
 
   @PostMapping("/auth/token")
@@ -51,11 +39,8 @@ public class AuthHandler {
   private TokenDTO toDTO(Tokens tokens) throws JWTCreationException {
     AccessToken accessToken = tokens.getAccessToken();
     IDToken idToken = tokens.getIdToken();
-    List<String> roles = accessToken
-            .getRoles()
-            .stream()
-            .map(Objects::toString)
-            .collect(Collectors.toList());
+    List<String> roles =
+        accessToken.getRoles().stream().map(Objects::toString).collect(Collectors.toList());
     String userId = accessToken.getUserId().toString();
     String accessJWT =
         JWT.create()
