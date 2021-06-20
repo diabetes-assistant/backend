@@ -1,3 +1,9 @@
 auth:
   accessTokenSecret: ${JWT_AUTH_SECRET:"auth-secret"}
   idTokenSecret: ${JWT_ID_SECRET:"id-secret"}
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: mysecretpassword

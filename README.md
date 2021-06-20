@@ -26,6 +26,11 @@ To run all tests and checks
 ```
 
 ### Integration tests
+In order to run the integration tests, you need to have a postgres server running:
+```bash
+docker run --name backend-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres
+```
+Then you can run the integration tests with:
 ```bash
 ./gradlew integrationTest
 ```
