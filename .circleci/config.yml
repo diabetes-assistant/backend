@@ -43,11 +43,14 @@ jobs:
           path: build/test-results
 
   integration_test:
-    <<: *java_base
     docker:
+      - image: cimg/openjdk:16.0
       - image: postgres
-        environment:
-          POSTGRES_PASSWORD: mysecretpassword
+      working_directory: ~/repo
+      environment:
+        JVM_OPTS: -Xmx3200m
+        TERM: dumb
+        POSTGRES_PASSWORD: mysecretpassword
     steps:
       - checkout
       - restore_gradle_cache
