@@ -45,11 +45,13 @@ jobs:
   integration_test:
     docker:
       - image: cimg/openjdk:16.0
+        environment:
+          JVM_OPTS: -Xmx3200m
+          TERM: dumb
       - image: postgres
-      environment:
-        POSTGRES_PASSWORD: mysecretpassword
-        JVM_OPTS: -Xmx3200m
-        TERM: dumb
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: mysecretpassword
     working_directory: ~/repo
     steps:
       - checkout
