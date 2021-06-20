@@ -8,5 +8,5 @@ public class UserEntity {
   UUID id;
   String email;
   String password;
-  RoleEntity role;
+  String role;
 }

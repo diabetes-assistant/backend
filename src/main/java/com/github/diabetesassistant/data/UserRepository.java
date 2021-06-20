@@ -1,11 +1,10 @@
 package com.github.diabetesassistant.data;
 
+import java.util.UUID;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.util.UUID;
 
 @Component
 public interface UserRepository extends ReactiveCrudRepository<UserEntity, UUID> {

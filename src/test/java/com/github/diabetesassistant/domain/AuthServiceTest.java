@@ -30,7 +30,7 @@ class AuthServiceTest {
   @Test
   void shouldReturnCreatedToken() {
     UserEntity existingUser =
-        new UserEntity(UUID.randomUUID(), "foo@bar.com", "secret", RoleEntity.DOCTOR);
+        new UserEntity(UUID.randomUUID(), "foo@bar.com", "secret", Role.DOCTOR.value);
     when(this.userRepository.findByEmailAndPassword(anyString(), anyString()))
         .thenReturn(Mono.just(existingUser));
     TokenEntity createdToken =

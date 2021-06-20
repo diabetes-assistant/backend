@@ -41,9 +41,7 @@ public class AuthService {
   private AccessToken toAccessToken(Tuple2<UserEntity, TokenEntity> userAndToken) {
     UserEntity user = userAndToken.getT1();
     Optional<Role> maybeRole =
-        Arrays.stream(Role.values())
-            .filter(role -> role.value.equals(user.getRole().value))
-            .findFirst();
+        Arrays.stream(Role.values()).filter(role -> role.value.equals(user.getRole())).findFirst();
     return new AccessToken(user.getId(), maybeRole.map(List::of).orElse(null));
   }
 }

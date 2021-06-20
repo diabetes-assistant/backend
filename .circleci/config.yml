@@ -44,6 +44,10 @@ jobs:
 
   integration_test:
     <<: *java_base
+    docker:
+      - image: postgres
+        environment:
+          POSTGRES_PASSWORD: mysecretpassword
     steps:
       - checkout
       - restore_gradle_cache
@@ -63,7 +67,7 @@ jobs:
       - restore_gradle_cache
       - run: ./gradlew dependencies
       - save_gradle_cache
-      - run: ./gradlew spotbugsMain spotbugsTest spotbugsIntTest
+      - run: ./gradlew spotbugsMain spotbugsTest
       - store_artifacts:
           path: build/reports
           destination: reports
