@@ -93,7 +93,6 @@ public class AuthHandlerTest {
     when(this.serviceMock.authenticate(any())).thenThrow(new IllegalArgumentException("foo"));
     UserDTO userDTO = new UserDTO("foo@bar.com", "secret");
 
-    ErrorDTO expected = new ErrorDTO("Invalid user given");
     this.webTestClient
         .post()
         .uri("/auth/token")
