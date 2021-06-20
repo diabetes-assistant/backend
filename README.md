@@ -6,7 +6,7 @@ A _Spring Webflux_ backend for the [Diabetes Assistant App](https://github.com/d
 built with gradle.
 
 ## Prerequisites
-* JDK 16
+* [JDK 16](https://adoptopenjdk.net/installation.html?variant=openjdk16&jvmVariant=hotspot#)
 
 ## Run locally
 This will run the server locally by default on port 8080
