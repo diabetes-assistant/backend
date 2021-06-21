@@ -2,6 +2,9 @@ auth:
   accessTokenSecret: ${JWT_AUTH_SECRET:"auth-secret"}
   idTokenSecret: ${JWT_ID_SECRET:"id-secret"}
 
+db:
+  load_from_environment: false
+
 spring:
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/postgres
