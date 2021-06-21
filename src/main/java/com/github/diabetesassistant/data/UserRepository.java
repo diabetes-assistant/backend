@@ -8,6 +8,6 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface UserRepository extends ReactiveCrudRepository<UserEntity, UUID> {
-  @Query("SELECT * FROM users where email = :email AND password = :password ")
-  Mono<UserEntity> findByEmailAndPassword(String email, String password);
+  @Query("SELECT * FROM users where email = :email")
+  Mono<UserEntity> findByEmail(String email);
 }

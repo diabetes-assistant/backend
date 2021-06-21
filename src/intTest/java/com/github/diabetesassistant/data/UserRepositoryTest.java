@@ -25,7 +25,7 @@ class UserRepositoryTest extends DatabaseTest {
             + "', 'foo@bar.com', 'secret', 'patient')");
     statement.close();
 
-    Mono<UserEntity> actual = this.userRepository.findByEmailAndPassword("foo@bar.com", "secret");
+    Mono<UserEntity> actual = this.userRepository.findByEmail("foo@bar.com");
     UserEntity expected = new UserEntity(id, "foo@bar.com", "secret", Role.PATIENT.value);
 
     StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();

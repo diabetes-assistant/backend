@@ -17,16 +17,19 @@ public class AuthService {
 
   private final UserRepository userRepository;
   private final TokenRepository tokenRepository;
+  private final PasswordCrypt passwordCrypt;
 
   public Mono<Tokens> authenticate(User user) {
-    Mono<UserEntity> existingUser =
-        this.userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
+    Mono<UserEntity> existingUser = this.userRepository.findByEmail(user.getEmail());
+    Mono<UserEntity> onlyValidUser =
+        existingUser.filter(
+            userEntity -> this.passwordCrypt.isEqual(user.getPassword(), userEntity.getPassword()));
     Mono<TokenEntity> accessTokenEntity =
-        existingUser.map(toTokenEntity(TokenTypeEntity.ACCESS_TOKEN));
+        onlyValidUser.map(toTokenEntity(TokenTypeEntity.ACCESS_TOKEN));
     Mono<TokenEntity> createdAccessToken = accessTokenEntity.flatMap(tokenRepository::save);
     Mono<AccessToken> accessToken =
-        Mono.zip(existingUser, createdAccessToken).map(this::toAccessToken);
-    Mono<TokenEntity> idTokenEntity = existingUser.map(toTokenEntity(TokenTypeEntity.ID_TOKEN));
+        Mono.zip(onlyValidUser, createdAccessToken).map(this::toAccessToken);
+    Mono<TokenEntity> idTokenEntity = onlyValidUser.map(toTokenEntity(TokenTypeEntity.ID_TOKEN));
     Mono<TokenEntity> createdIdToken = idTokenEntity.flatMap(tokenRepository::save);
     Mono<IDToken> idToken =
         createdIdToken.map(token -> new IDToken(token.getUserId(), user.getEmail()));
