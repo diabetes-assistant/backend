@@ -23,13 +23,13 @@ public class AuthService {
         this.userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
     Mono<TokenEntity> accessTokenEntity =
         existingUser.map(toTokenEntity(TokenTypeEntity.ACCESS_TOKEN));
-    Mono<TokenEntity> createdAccessToken = accessTokenEntity.flatMap(tokenRepository::create);
+    Mono<TokenEntity> createdAccessToken = accessTokenEntity.flatMap(tokenRepository::save);
     Mono<AccessToken> accessToken =
         Mono.zip(existingUser, createdAccessToken).map(this::toAccessToken);
     Mono<TokenEntity> idTokenEntity = existingUser.map(toTokenEntity(TokenTypeEntity.ID_TOKEN));
-    Mono<TokenEntity> createdIdToken = idTokenEntity.flatMap(tokenRepository::create);
+    Mono<TokenEntity> createdIdToken = idTokenEntity.flatMap(tokenRepository::save);
     Mono<IDToken> idToken =
-        createdIdToken.map(token -> new IDToken(token.getUser(), user.getEmail()));
+        createdIdToken.map(token -> new IDToken(token.getUserId(), user.getEmail()));
     return Mono.zip(accessToken, idToken).map(a -> new Tokens(a.getT1(), a.getT2()));
   }
 

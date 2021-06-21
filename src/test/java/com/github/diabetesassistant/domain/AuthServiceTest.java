@@ -35,7 +35,7 @@ class AuthServiceTest {
         .thenReturn(Mono.just(existingUser));
     TokenEntity createdToken =
         new TokenEntity(TokenTypeEntity.ID_TOKEN, existingUser.getId(), LocalDateTime.now());
-    when(this.tokenRepository.create(any(TokenEntity.class))).thenReturn(Mono.just(createdToken));
+    when(this.tokenRepository.save(any(TokenEntity.class))).thenReturn(Mono.just(createdToken));
     User user = new User("foo@bar.com", "secret");
 
     Mono<Tokens> actual = this.testee.authenticate(user);

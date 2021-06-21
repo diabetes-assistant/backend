@@ -1,11 +1,8 @@
 package com.github.diabetesassistant.data;
 
-import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
+import java.util.UUID;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.stereotype.Repository;
 
-@Component
-public class TokenRepository {
-  public Mono<TokenEntity> create(TokenEntity entity) {
-    return null;
-  }
-}
+@Repository
+public interface TokenRepository extends ReactiveCrudRepository<TokenEntity, UUID> {}
