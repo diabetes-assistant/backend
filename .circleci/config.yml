@@ -65,7 +65,7 @@ jobs:
       - store_test_results:
           path: build/test-results
 
-  spotbugs:
+  static_code_check:
     <<: *java_base
     steps:
       - checkout
@@ -79,7 +79,7 @@ jobs:
       - store_test_results:
           path: build/reports/spotbugs
 
-  spotless:
+  lint:
     <<: *java_base
     steps:
       - checkout
@@ -87,6 +87,16 @@ jobs:
       - run: ./gradlew dependencies
       - save_gradle_cache
       - run: ./gradlew spotlessCheck
+
+  security_check:
+    docker:
+      - image: aquasec/trivy
+    steps:
+      - checkout
+      - run:
+          name: Run security check
+          command: trivy fs ./
+
 
   build:
     <<: *java_base
@@ -140,14 +150,16 @@ workflows:
     jobs:
       - unit_test
       - integration_test
-      - spotbugs
-      - spotless
+      - static_code_check
+      - security_check
+      - lint
       - build:
           requires:
             - unit_test
             - integration_test
-            - spotbugs
-            - spotless
+            - static_code_check
+            - lint
+            - security_check
       - deploy_staging:
           requires:
             - build
