@@ -30,7 +30,7 @@ public class DatabaseConfiguration extends AbstractR2dbcConfiguration {
         PostgresqlConnectionConfiguration.builder()
             .host(dbUri.getHost())
             .port(dbUri.getPort())
-            .database(dbUri.getPath())
+            .database(dbUri.getPath().substring(1))
             .username(username)
             .password(password)
             .sslMode(SSLMode.REQUIRE)
