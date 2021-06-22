@@ -20,6 +20,7 @@ public class CorsConfiguration implements WebFluxConfigurer {
             "https://live-diabetes-assitant-fe.herokuapp.com",
             "localhost")
         .allowedMethods("PUT", "POST", "GET", "OPTION", "DELETE")
+        .allowCredentials(true)
         .maxAge(3600);
   }
 }
