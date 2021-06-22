@@ -1,3 +1,5 @@
 auth:
   accessTokenSecret: "access-secret"
   idTokenSecret: "id-secret"
+
+cors: false

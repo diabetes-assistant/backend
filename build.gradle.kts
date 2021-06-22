@@ -79,3 +79,9 @@ tasks.check { dependsOn(integrationTest) }
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks {
+    named<com.github.spotbugs.snom.SpotBugsTask>("spotbugsIntTest") {
+        ignoreFailures = true
+    }
+}

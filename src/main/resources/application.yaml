@@ -4,6 +4,8 @@ server:
 db:
   load_from_environment: true
 
+cors: true
+
 auth:
   accessTokenSecret: ${JWT_AUTH_SECRET:"auth-secret"}
   idTokenSecret: ${JWT_ID_SECRET:"id-secret"}

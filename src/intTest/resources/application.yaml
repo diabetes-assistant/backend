@@ -5,6 +5,8 @@ auth:
 db:
   load_from_environment: false
 
+cors: false
+
 spring:
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/postgres
