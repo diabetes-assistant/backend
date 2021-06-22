@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class AuthService {
 
   private final UserRepository userRepository;
@@ -20,6 +22,7 @@ public class AuthService {
   private final PasswordCrypt passwordCrypt;
 
   public Mono<Tokens> authenticate(User user) {
+    log.info("authenticating user");
     Mono<UserEntity> existingUser = this.userRepository.findByEmail(user.getEmail());
     Mono<UserEntity> onlyValidUser =
         existingUser.filter(

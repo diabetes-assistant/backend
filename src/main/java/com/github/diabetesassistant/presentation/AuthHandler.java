@@ -7,6 +7,7 @@ import com.github.diabetesassistant.domain.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
     value = "/auth",
     produces = MediaType.APPLICATION_JSON_VALUE,
     consumes = MediaType.APPLICATION_JSON_VALUE)
+@Slf4j
 public class AuthHandler {
   private final AuthService service;
   private final Algorithm accessTokenAlgorithm;
@@ -39,9 +41,15 @@ public class AuthHandler {
 
   @PostMapping("/token")
   public Mono<ResponseEntity<?>> createToken(@RequestBody UserDTO userDTO) {
+    log.info("handling incoming token creation request");
     User user = new User(userDTO.getEmail(), userDTO.getPassword());
     Mono<Tokens> tokens = this.service.authenticate(user);
     return tokens
+        .mapNotNull(
+            createdTokens -> {
+              log.info("created tokens");
+              return createdTokens;
+            })
         .map(this::toDTO)
         .<ResponseEntity<?>>map(ResponseEntity::ok)
         .defaultIfEmpty(ResponseEntity.badRequest().body(new ErrorDTO("Invalid user given")));
