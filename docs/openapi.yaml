@@ -9,12 +9,12 @@ info:
     url: https://github.com/diabetes-assistant/backend/blob/main/LICENSE
   version: 0.1.0
 servers:
-- url: https://staging-diabetes-assistant-be.herokuapp.com/
-- url: https://live-diabetes-assistant-be.herokuapp.com/
+  - url: https://staging-diabetes-assistant-be.herokuapp.com/
+  - url: https://live-diabetes-assistant-be.herokuapp.com/
 paths:
   /auth/token:
     post:
-      summary: Update an existing pet
+      summary: Create a tokens for authorization
       operationId: createToken
       requestBody:
         description: UserDTO to create a token for
@@ -36,8 +36,8 @@ components:
     UserDTO:
       type: object
       required:
-      - email
-      - password
+        - email
+        - password
       properties:
         email:
           type: string
@@ -46,7 +46,7 @@ components:
     ErrorDTO:
       type: object
       required:
-      - message
+        - message
       properties:
         message:
           type: string
