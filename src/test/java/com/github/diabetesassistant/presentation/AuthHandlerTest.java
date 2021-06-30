@@ -33,8 +33,6 @@ public class AuthHandlerTest {
     IDToken idToken = new IDToken(userId, "foo@bar.com");
     Tokens loggedInToken = new Tokens(accessToken, idToken);
     when(this.serviceMock.authenticate(any())).thenReturn(Mono.just(loggedInToken));
-    Algorithm accessTokenAlgorithm = Algorithm.HMAC512("access-secret");
-    Algorithm idTokenAlgorithm = Algorithm.HMAC512("id-secret");
     UserDTO userDTO = new UserDTO("foo@bar.com", "secret");
 
     this.webTestClient
