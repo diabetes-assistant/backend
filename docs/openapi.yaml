@@ -14,7 +14,7 @@ servers:
 paths:
   /auth/token:
     post:
-      summary: Create a tokens for authorization
+      summary: Create tokens for authorization
       operationId: createToken
       requestBody:
         description: UserDTO to create a token for
@@ -24,6 +24,12 @@ paths:
               $ref: '#/components/schemas/UserDTO'
         required: true
       responses:
+        200:
+          description: Created tokens to authorize with (successful authentication)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenDTO'
         400:
           description: Supplied data is incorrect
           content:
@@ -42,6 +48,16 @@ components:
         email:
           type: string
         password:
+          type: string
+    TokenDTO:
+      type: object
+      required:
+        - accessToken
+        - idToken
+      properties:
+        accessToken:
+          type: string
+        idToken:
           type: string
     ErrorDTO:
       type: object
