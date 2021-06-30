@@ -4,9 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.github.diabetesassistant.domain.*;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping(
     value = "/auth",
@@ -28,6 +33,7 @@ public class AuthHandler {
   private final AuthService service;
   private final Algorithm accessTokenAlgorithm;
   private final Algorithm idTokenAlgorithm;
+  static final ZoneId BERLIN_ZONE = ZoneId.of("Europe/Berlin");
 
   @Autowired
   public AuthHandler(
@@ -61,12 +67,15 @@ public class AuthHandler {
     List<String> roles =
         accessToken.getRoles().stream().map(Objects::toString).collect(Collectors.toList());
     String userId = accessToken.getUserId().toString();
+    LocalDateTime now = LocalDateTime.now();
+    ZoneOffset zoneOffset = BERLIN_ZONE.getRules().getOffset(now);
     String accessJWT =
         JWT.create()
             .withIssuer("diabetes-assistant-backend")
             .withAudience("diabetes-assistant-client")
             .withSubject(userId)
             .withClaim("diabetesAssistant:roles", String.join(",", roles))
+            .withExpiresAt(Date.from(now.plusHours(10L).toInstant(zoneOffset)))
             .sign(this.accessTokenAlgorithm);
     String idJWT =
         JWT.create()
@@ -74,6 +83,7 @@ public class AuthHandler {
             .withAudience("diabetes-assistant-client")
             .withSubject(userId)
             .withClaim("email", idToken.getEmail())
+            .withExpiresAt(Date.from(now.plusDays(1L).toInstant(zoneOffset)))
             .sign(this.idTokenAlgorithm);
     return new TokenDTO(accessJWT, idJWT);
   }
