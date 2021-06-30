@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.auth0.jwt.algorithms.Algorithm;
 import com.github.diabetesassistant.domain.*;
 import java.util.List;
 import java.util.UUID;
