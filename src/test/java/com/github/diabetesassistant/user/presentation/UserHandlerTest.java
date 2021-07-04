@@ -1,7 +1,8 @@
 package com.github.diabetesassistant.user.presentation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 import com.github.diabetesassistant.core.presentation.ErrorDTO;
@@ -50,23 +51,29 @@ public class UserHandlerTest {
   }
 
   @Test
-  void shouldReturn400WhenUserHasNoId() {
+  void shouldReturnUserRequestWhenUserHasNoId() {
     User createdUser = new User(Optional.empty(), "foo@bar.com", "secret", Role.DOCTOR);
     when(this.serviceMock.register(any())).thenReturn(Mono.just(createdUser));
+    UserCreationRequestDTO creationRequest =
+        new UserCreationRequestDTO("foo@bar.com", "secret", "doctor");
 
+    UserDTO expected = new UserDTO("", creationRequest.email(), creationRequest.role());
     this.webTestClient
         .post()
         .uri("/user")
         .contentType(MediaType.APPLICATION_JSON)
-        .body(
-            Mono.just(new UserCreationRequestDTO("foo@bar.com", "secret", "doctor")),
-            UserCreationRequestDTO.class)
+        .body(Mono.just(creationRequest), UserCreationRequestDTO.class)
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()
-        .is4xxClientError()
-        .expectBody(ErrorDTO.class)
-        .value(response -> assertEquals(ErrorDTO.class, response.getClass()));
+        .isOk()
+        .expectBody(UserDTO.class)
+        .value(
+            response -> {
+              assertNotNull(response.id());
+              assertEquals(expected.email(), response.email());
+              assertEquals(expected.role(), response.role());
+            });
   }
 
   @Test

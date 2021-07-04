@@ -5,6 +5,7 @@ import com.github.diabetesassistant.user.domain.Role;
 import com.github.diabetesassistant.user.domain.User;
 import com.github.diabetesassistant.user.domain.UserService;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -27,13 +28,13 @@ public class UserHandler {
 
   @PostMapping
   public Mono<ResponseEntity<?>> createUser(@RequestBody UserCreationRequestDTO dto) {
-    log.info("handling incoming user creation request");
+    log.info("Start handling incoming user creation request");
     Mono<User> userMono = this.toUser(dto);
     Mono<User> createdUserMono = userMono.flatMap(this.service::register);
     return createdUserMono
         .mapNotNull(
             createdUser -> {
-              log.info("created user");
+              log.info("Done handling incoming user creation request");
               return createdUser;
             })
         .flatMap(this::toDTO)
@@ -53,10 +54,7 @@ public class UserHandler {
   }
 
   private Mono<UserDTO> toDTO(User user) {
-    if (user.id().isEmpty()) {
-      log.error("Created user with empty user id for email: {}", user.email());
-      return Mono.empty();
-    }
-    return Mono.just(new UserDTO(user.id().get().toString(), user.email(), user.role().value));
+    UUID userId = user.id().orElse(UUID.randomUUID());
+    return Mono.just(new UserDTO(userId.toString(), user.email(), user.role().value));
   }
 }
