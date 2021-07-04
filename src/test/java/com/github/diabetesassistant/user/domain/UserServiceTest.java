@@ -32,6 +32,7 @@ class UserServiceTest {
     UUID userId = UUID.randomUUID();
     UserEntity createdUser = new UserEntity(userId, "foo@bar.com", "secret", "doctor");
     when(this.repository.save(any())).thenReturn(Mono.just(createdUser));
+    when(this.repository.findByEmail(anyString())).thenReturn(Mono.empty());
     User toBeCreated = new User(Optional.empty(), "foo@bar.com", "secret", Role.DOCTOR);
 
     Mono<User> actual = this.testee.register(toBeCreated);
@@ -42,7 +43,22 @@ class UserServiceTest {
   }
 
   @Test
+  void shouldReturnEmptySameUserWhenAlreadyExists() {
+    UUID userId = UUID.randomUUID();
+    UserEntity existingUser = new UserEntity(userId, "foo@bar.com", "secret", "doctor");
+    when(this.repository.findByEmail(anyString())).thenReturn(Mono.just(existingUser));
+    User toBeCreated = new User(Optional.empty(), "foo@bar.com", "secret", Role.DOCTOR);
+
+    Mono<User> actual = this.testee.register(toBeCreated);
+
+    StepVerifier.create(actual.log()).expectNext(toBeCreated).verifyComplete();
+    verify(this.repository, times(0)).save(any());
+    verify(this.passwordCrypt, times(0)).encode("secret");
+  }
+
+  @Test
   void shouldReturnEmptyWhenRepositoryEmpty() {
+    when(this.repository.findByEmail(anyString())).thenReturn(Mono.empty());
     when(this.repository.save(any())).thenReturn(Mono.empty());
     User toBeCreated = new User(Optional.empty(), "foo@bar.com", "secret", Role.DOCTOR);
 

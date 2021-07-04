@@ -19,6 +19,20 @@ public class UserService {
 
   public Mono<User> register(User user) {
     log.info("Registering user");
+    Mono<UserEntity> existingUser = this.repository.findByEmail(user.email());
+    return existingUser
+        .hasElement()
+        .flatMap(
+            userExists -> {
+              if (userExists) {
+                log.info("User({}) was not created since it already exists", user.email());
+                return Mono.just(user);
+              }
+              return this.createUser(user);
+            });
+  }
+
+  private Mono<User> createUser(User user) {
     UserEntity toBeCreated = new UserEntity(null, user.email(), user.password(), user.role().value);
     Mono<UserEntity> toBeCreatedUser = Mono.just(toBeCreated);
     Mono<UserEntity> userWithEncryptedPassword =
