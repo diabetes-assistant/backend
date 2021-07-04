@@ -1,8 +1,9 @@
 package com.github.diabetesassistant.user.domain;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.github.diabetesassistant.core.domain.PasswordCrypt;
 import com.github.diabetesassistant.user.data.UserEntity;
 import com.github.diabetesassistant.user.data.UserRepository;
 import java.util.Optional;
@@ -18,11 +19,12 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
   @Mock private UserRepository repository;
+  @Mock private PasswordCrypt passwordCrypt;
   private UserService testee;
 
   @BeforeEach
   void setUp() {
-    this.testee = new UserService(this.repository);
+    this.testee = new UserService(this.repository, this.passwordCrypt);
   }
 
   @Test
@@ -36,6 +38,7 @@ class UserServiceTest {
     User expected = new User(Optional.of(userId), "foo@bar.com", "secret", Role.DOCTOR);
 
     StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
+    verify(this.passwordCrypt, times(1)).encode("secret");
   }
 
   @Test
@@ -46,5 +49,6 @@ class UserServiceTest {
     Mono<User> actual = this.testee.register(toBeCreated);
 
     StepVerifier.create(actual.log()).verifyComplete();
+    verify(this.passwordCrypt, times(1)).encode("secret");
   }
 }

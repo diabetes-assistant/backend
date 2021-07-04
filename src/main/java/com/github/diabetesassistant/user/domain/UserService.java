@@ -1,5 +1,6 @@
 package com.github.diabetesassistant.user.domain;
 
+import com.github.diabetesassistant.core.domain.PasswordCrypt;
 import com.github.diabetesassistant.user.data.UserEntity;
 import com.github.diabetesassistant.user.data.UserRepository;
 import java.util.Optional;
@@ -12,10 +13,18 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class UserService {
   UserRepository repository;
+  PasswordCrypt passwordCrypt;
 
   public Mono<User> register(User user) {
     UserEntity toBeCreated = new UserEntity(null, user.email(), user.password(), user.role().value);
-    Mono<UserEntity> createdUser = this.repository.save(toBeCreated);
+    Mono<UserEntity> toBeCreatedUser = Mono.just(toBeCreated);
+    Mono<UserEntity> userWithEncryptedPassword =
+        toBeCreatedUser.map(
+            userEntity -> {
+              String encryptedPassword = passwordCrypt.encode(userEntity.password());
+              return new UserEntity(null, userEntity.email(), encryptedPassword, userEntity.role());
+            });
+    Mono<UserEntity> createdUser = userWithEncryptedPassword.flatMap(this.repository::save);
     return createdUser.flatMap(this::toUser);
   }
 
