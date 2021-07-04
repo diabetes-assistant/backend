@@ -32,13 +32,14 @@ public class AuthHandlerTest {
     IDToken idToken = new IDToken(userId, "foo@bar.com");
     Tokens loggedInToken = new Tokens(accessToken, idToken);
     when(this.serviceMock.authenticate(any())).thenReturn(Mono.just(loggedInToken));
-    UserDTO userDTO = new UserDTO("foo@bar.com", "secret");
+    TokenCreationRequestDTO tokenCreationRequestDTO =
+        new TokenCreationRequestDTO("foo@bar.com", "secret");
 
     this.webTestClient
         .post()
         .uri("/auth/token")
         .contentType(MediaType.APPLICATION_JSON)
-        .body(Mono.just(userDTO), UserDTO.class)
+        .body(Mono.just(tokenCreationRequestDTO), TokenCreationRequestDTO.class)
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()
@@ -46,22 +47,23 @@ public class AuthHandlerTest {
         .expectBody(TokenDTO.class)
         .value(
             response -> {
-              assertNotEquals("", response.getAccessToken());
-              assertNotEquals("", response.getIdToken());
+              assertNotEquals("", response.accessToken());
+              assertNotEquals("", response.idToken());
             });
   }
 
   @Test
   void shouldReturn400WhenNoTokenCreated() {
     when(this.serviceMock.authenticate(any())).thenReturn(Mono.empty());
-    UserDTO userDTO = new UserDTO("foo@bar.com", "secret");
+    TokenCreationRequestDTO tokenCreationRequestDTO =
+        new TokenCreationRequestDTO("foo@bar.com", "secret");
 
     ErrorDTO expected = new ErrorDTO("Invalid user given");
     this.webTestClient
         .post()
         .uri("/auth/token")
         .contentType(MediaType.APPLICATION_JSON)
-        .body(Mono.just(userDTO), UserDTO.class)
+        .body(Mono.just(tokenCreationRequestDTO), TokenCreationRequestDTO.class)
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()
@@ -73,13 +75,14 @@ public class AuthHandlerTest {
   @Test
   void shouldReturn500OnError() {
     when(this.serviceMock.authenticate(any())).thenThrow(new IllegalArgumentException("foo"));
-    UserDTO userDTO = new UserDTO("foo@bar.com", "secret");
+    TokenCreationRequestDTO tokenCreationRequestDTO =
+        new TokenCreationRequestDTO("foo@bar.com", "secret");
 
     this.webTestClient
         .post()
         .uri("/auth/token")
         .contentType(MediaType.APPLICATION_JSON)
-        .body(Mono.just(userDTO), UserDTO.class)
+        .body(Mono.just(tokenCreationRequestDTO), TokenCreationRequestDTO.class)
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()

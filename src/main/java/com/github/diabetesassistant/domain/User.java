@@ -1,9 +1,3 @@
 package com.github.diabetesassistant.domain;
 
-import lombok.Value;
-
-@Value
-public class User {
-  String email;
-  String password;
-}
+public record User(String email, String password) {}

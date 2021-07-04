@@ -1,11 +1,8 @@
 package com.github.diabetesassistant.domain;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.UUID;
-import lombok.Value;
 
-@Value
-public class AccessToken {
-  UUID userId;
-  List<Role> roles;
-}
+@SuppressFBWarnings(value = "EI_EXPOSE_REP")
+public record AccessToken(UUID userId, List<Role> roles) {}

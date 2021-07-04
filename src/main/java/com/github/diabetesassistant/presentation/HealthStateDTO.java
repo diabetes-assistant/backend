@@ -1,8 +1,3 @@
 package com.github.diabetesassistant.presentation;
 
-import lombok.Value;
-
-@Value
-public class HealthStateDTO {
-  String status;
-}
+public record HealthStateDTO(String status) {}

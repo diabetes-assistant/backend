@@ -1,5 +1,6 @@
 package com.github.diabetesassistant.data;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Value;
@@ -9,6 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Value
 @Table("tokens")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP")
 public class TokenEntity {
   @Id UUID id;
   TokenTypeEntity type;

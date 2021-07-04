@@ -45,9 +45,10 @@ public class AuthHandler {
   }
 
   @PostMapping("/token")
-  public Mono<ResponseEntity<?>> createToken(@RequestBody UserDTO userDTO) {
+  public Mono<ResponseEntity<?>> createToken(
+      @RequestBody TokenCreationRequestDTO tokenCreationRequestDTO) {
     log.info("handling incoming token creation request");
-    User user = new User(userDTO.getEmail(), userDTO.getPassword());
+    User user = new User(tokenCreationRequestDTO.email(), tokenCreationRequestDTO.password());
     Mono<Tokens> tokens = this.service.authenticate(user);
     return tokens
         .mapNotNull(
@@ -61,11 +62,11 @@ public class AuthHandler {
   }
 
   private TokenDTO toDTO(Tokens tokens) throws JWTCreationException {
-    AccessToken accessToken = tokens.getAccessToken();
-    IDToken idToken = tokens.getIdToken();
+    AccessToken accessToken = tokens.accessToken();
+    IDToken idToken = tokens.idToken();
     List<String> roles =
-        accessToken.getRoles().stream().map(Objects::toString).collect(Collectors.toList());
-    String userId = accessToken.getUserId().toString();
+        accessToken.roles().stream().map(Objects::toString).collect(Collectors.toList());
+    String userId = accessToken.userId().toString();
     LocalDateTime now = LocalDateTime.now();
     ZoneOffset zoneOffset = BERLIN_ZONE.getRules().getOffset(now);
     String accessJWT =
@@ -81,7 +82,7 @@ public class AuthHandler {
             .withIssuer("diabetes-assistant-backend")
             .withAudience("diabetes-assistant-client")
             .withSubject(userId)
-            .withClaim("email", idToken.getEmail())
+            .withClaim("email", idToken.email())
             .withExpiresAt(Date.from(now.plusDays(1L).toInstant(zoneOffset)))
             .sign(this.idTokenAlgorithm);
     return new TokenDTO(accessJWT, idJWT);

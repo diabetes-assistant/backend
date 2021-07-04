@@ -17,11 +17,11 @@ paths:
       summary: Create tokens for authorization
       operationId: createToken
       requestBody:
-        description: UserDTO to create a token for
+        description: TokenCreationRequestDTO to a token with
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserDTO'
+              $ref: '#/components/schemas/TokenCreationRequestDTO'
         required: true
       responses:
         200:
@@ -39,7 +39,7 @@ paths:
       x-codegen-request-body-name: body
 components:
   schemas:
-    UserDTO:
+    TokenCreationRequestDTO:
       type: object
       required:
         - email
@@ -47,8 +47,10 @@ components:
       properties:
         email:
           type: string
+          description: E-Mail of the user the token should be created for
         password:
           type: string
+          description: Password of the user the token should be created for
     TokenDTO:
       type: object
       required:

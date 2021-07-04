@@ -34,14 +34,14 @@ class AuthServiceTest {
     UserEntity existingUser = new UserEntity(randomUUID(), "foo@bar.com", "secret", DOCTOR.value);
     when(this.userRepository.findByEmail(anyString())).thenReturn(Mono.just(existingUser));
     TokenEntity createdToken =
-        new TokenEntity(TokenTypeEntity.ID_TOKEN, existingUser.getId(), LocalDateTime.now());
+        new TokenEntity(TokenTypeEntity.ID_TOKEN, existingUser.id(), LocalDateTime.now());
     when(this.tokenRepository.save(any(TokenEntity.class))).thenReturn(Mono.just(createdToken));
     when(this.passwordCrypt.isEqual(anyString(), anyString())).thenReturn(true);
     User user = new User("foo@bar.com", "secret");
 
     Mono<Tokens> actual = this.testee.authenticate(user);
-    AccessToken expectedAccessToken = new AccessToken(existingUser.getId(), List.of(DOCTOR));
-    IDToken expectedIDToken = new IDToken(existingUser.getId(), existingUser.getEmail());
+    AccessToken expectedAccessToken = new AccessToken(existingUser.id(), List.of(DOCTOR));
+    IDToken expectedIDToken = new IDToken(existingUser.id(), existingUser.email());
     Tokens expected = new Tokens(expectedAccessToken, expectedIDToken);
 
     StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();

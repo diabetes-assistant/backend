@@ -23,10 +23,10 @@ public class AuthService {
 
   public Mono<Tokens> authenticate(User user) {
     log.info("authenticating user");
-    Mono<UserEntity> existingUser = this.userRepository.findByEmail(user.getEmail());
+    Mono<UserEntity> existingUser = this.userRepository.findByEmail(user.email());
     Mono<UserEntity> onlyValidUser =
         existingUser.filter(
-            userEntity -> this.passwordCrypt.isEqual(user.getPassword(), userEntity.getPassword()));
+            userEntity -> this.passwordCrypt.isEqual(user.password(), userEntity.password()));
     Mono<TokenEntity> accessTokenEntity =
         onlyValidUser.map(toTokenEntity(TokenTypeEntity.ACCESS_TOKEN));
     Mono<TokenEntity> createdAccessToken = accessTokenEntity.flatMap(tokenRepository::save);
@@ -35,19 +35,19 @@ public class AuthService {
     Mono<TokenEntity> idTokenEntity = onlyValidUser.map(toTokenEntity(TokenTypeEntity.ID_TOKEN));
     Mono<TokenEntity> createdIdToken = idTokenEntity.flatMap(tokenRepository::save);
     Mono<IDToken> idToken =
-        createdIdToken.map(token -> new IDToken(token.getUserId(), user.getEmail()));
+        createdIdToken.map(token -> new IDToken(token.getUserId(), user.email()));
     return Mono.zip(accessToken, idToken).map(a -> new Tokens(a.getT1(), a.getT2()));
   }
 
   private Function<UserEntity, TokenEntity> toTokenEntity(TokenTypeEntity tokenType) {
     return (UserEntity userEntity) ->
-        new TokenEntity(tokenType, userEntity.getId(), LocalDateTime.now());
+        new TokenEntity(tokenType, userEntity.id(), LocalDateTime.now());
   }
 
   private AccessToken toAccessToken(Tuple2<UserEntity, TokenEntity> userAndToken) {
     UserEntity user = userAndToken.getT1();
     Optional<Role> maybeRole =
-        Arrays.stream(Role.values()).filter(role -> role.value.equals(user.getRole())).findFirst();
-    return new AccessToken(user.getId(), maybeRole.map(List::of).orElse(null));
+        Arrays.stream(Role.values()).filter(role -> role.value.equals(user.role())).findFirst();
+    return new AccessToken(user.id(), maybeRole.map(List::of).orElse(null));
   }
 }
