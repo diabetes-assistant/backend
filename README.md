@@ -44,3 +44,8 @@ Then you can run the integration tests with:
 ```bash
 ./gradlew spotbugsMain spotbugsTest spotbugsIntTest
 ```
+
+## View api definition
+```bash
+docker run -d --name backend-api-doc -p 8080:8080 -e SWAGGER_JSON=/docs/openapi.yaml -v $(pwd)/docs:/docs swaggerapi/swagger-ui
+```
