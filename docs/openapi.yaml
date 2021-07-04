@@ -17,7 +17,7 @@ paths:
       summary: Create tokens for authorization
       operationId: createToken
       requestBody:
-        description: TokenCreationRequestDTO to a token with
+        description: TokenCreationRequestDTO to create a token with
         content:
           application/json:
             schema:
@@ -37,8 +37,57 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
       x-codegen-request-body-name: body
+  /user:
+    post:
+      summary: Create a user
+      operationId: createUser
+      requestBody:
+        description: UserCreationRequestDTO to create a user with
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreationRequestDTO'
+        required: true
+      responses:
+        200:
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        400:
+          description: Supplied data is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+      x-codegen-request-body-name: body
 components:
   schemas:
+    UserDTO:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          description: UUID of user
+        email:
+          type: string
+          description: E-Mail of the user
+    UserCreationRequestDTO:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          description: E-Mail of the user that should be created
+        password:
+          type: string
+          description: Password of the user that should be created
     TokenCreationRequestDTO:
       type: object
       required:
