@@ -39,7 +39,7 @@ public class UserHandlerTest {
         .uri("/user")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
-            Mono.just(new UserCreationRequestDTO("foo@bar.com", "secret")),
+            Mono.just(new UserCreationRequestDTO("foo@bar.com", "secret", "patient")),
             UserCreationRequestDTO.class)
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
@@ -51,7 +51,7 @@ public class UserHandlerTest {
 
   @Test
   void shouldReturn400WhenUserHasNoId() {
-    User createdUser = new User(Optional.empty(), "foo@bar.com", "secret", null);
+    User createdUser = new User(Optional.empty(), "foo@bar.com", "secret", Role.DOCTOR);
     when(this.serviceMock.register(any())).thenReturn(Mono.just(createdUser));
 
     this.webTestClient
@@ -59,7 +59,7 @@ public class UserHandlerTest {
         .uri("/user")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
-            Mono.just(new UserCreationRequestDTO("foo@bar.com", "secret")),
+            Mono.just(new UserCreationRequestDTO("foo@bar.com", "secret", "doctor")),
             UserCreationRequestDTO.class)
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
@@ -78,7 +78,7 @@ public class UserHandlerTest {
         .uri("/user")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
-            Mono.just(new UserCreationRequestDTO("foo@bar.com", "secret")),
+            Mono.just(new UserCreationRequestDTO("foo@bar.com", "secret", "doctor")),
             UserCreationRequestDTO.class)
         .accept(MediaType.APPLICATION_JSON)
         .exchange()

@@ -1,6 +1,7 @@
 package com.github.diabetesassistant.user.presentation;
 
 import com.github.diabetesassistant.core.presentation.ErrorDTO;
+import com.github.diabetesassistant.user.domain.Role;
 import com.github.diabetesassistant.user.domain.User;
 import com.github.diabetesassistant.user.domain.UserService;
 import java.util.Optional;
@@ -27,8 +28,8 @@ public class UserHandler {
   @PostMapping
   public Mono<ResponseEntity<?>> createUser(@RequestBody UserCreationRequestDTO dto) {
     log.info("handling incoming user creation request");
-    User user = new User(Optional.empty(), dto.email(), dto.password(), null);
-    Mono<User> createdUserMono = this.service.register(user);
+    Mono<User> userMono = this.toUser(dto);
+    Mono<User> createdUserMono = userMono.flatMap(this.service::register);
     return createdUserMono
         .mapNotNull(
             createdUser -> {
@@ -38,7 +39,17 @@ public class UserHandler {
         .flatMap(this::toDTO)
         .<ResponseEntity<?>>map(ResponseEntity::ok)
         .defaultIfEmpty(
-            ResponseEntity.badRequest().body(new ErrorDTO("Invalid email or password given")));
+            ResponseEntity.badRequest()
+                .body(new ErrorDTO("Invalid email, password or role given")));
+  }
+
+  private Mono<User> toUser(UserCreationRequestDTO dto) {
+    Optional<Role> role = Role.fromString(dto.role());
+    if (role.isEmpty()) {
+      return Mono.empty();
+    }
+    User user = new User(Optional.empty(), dto.email(), dto.password(), role.get());
+    return Mono.just(user);
   }
 
   private Mono<UserDTO> toDTO(User user) {
