@@ -44,15 +44,10 @@ public class SecurityConfig {
       ServerHttpRequest request = ctx.getRequest();
       if (CorsUtils.isCorsRequest(request)) {
         ServerHttpResponse response = ctx.getResponse();
-        String host = request.getURI().getHost();
-        if (ALLOWED_ORIGINS.contains(host)) {
-          HttpHeaders headers = response.getHeaders();
-          String origin = request.getURI().getScheme() + "://" + host;
-          log.info(origin);
-          headers.add("Access-Control-Allow-Origin", origin);
-          headers.add("Access-Control-Allow-Methods", String.join(",", ALLOWED_METHODS));
-          headers.add("Access-Control-Max-Age", MAX_AGE);
-        }
+        HttpHeaders headers = response.getHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Methods", String.join(",", ALLOWED_METHODS));
+        headers.add("Access-Control-Max-Age", MAX_AGE);
 
         if (request.getMethod() == HttpMethod.OPTIONS) {
           response.setStatusCode(HttpStatus.OK);

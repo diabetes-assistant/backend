@@ -17,13 +17,8 @@ public class App {
     URI dbUri = new URI(databaseUrl);
     String username = dbUri.getUserInfo().split(":")[0];
     String password = dbUri.getUserInfo().split(":")[1];
-    String dbUrl =
-        "jdbc:postgresql://"
-            + dbUri.getHost()
-            + ':'
-            + dbUri.getPort()
-            + dbUri.getPath()
-            + "?sslmode=require";
+    String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+    //            + "?sslmode=require";
     Flyway flyway = Flyway.configure().dataSource(dbUrl, username, password).load();
     flyway.migrate();
     SpringApplication.run(App.class, args);
