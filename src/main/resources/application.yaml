@@ -1,13 +1,8 @@
 server:
   port: ${PORT:8080}
-  error:
-    include-message: ALWAYS
-    include-stacktrace: NEVER
 
 db:
   load_from_environment: true
-
-cors: true
 
 auth:
   accessTokenSecret: ${JWT_AUTH_SECRET:"auth-secret"}

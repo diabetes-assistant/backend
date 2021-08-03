@@ -1,20 +1,25 @@
 package com.github.diabetesassistant.auth.presentation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.github.diabetesassistant.auth.domain.*;
-import com.github.diabetesassistant.core.presentation.ErrorDTO;
+import com.github.diabetesassistant.core.presentation.SecurityConfig;
+import com.github.diabetesassistant.core.presentation.TokenFactory;
 import com.github.diabetesassistant.user.domain.Role;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -22,10 +27,16 @@ import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = AuthHandler.class)
+@Import(SecurityConfig.class)
 public class AuthHandlerTest {
   @MockBean private AuthService serviceMock;
-
+  @MockBean private TokenFactory tokenFactory;
   @Autowired private WebTestClient webTestClient;
+
+  @BeforeEach
+  void setUp() {
+    when(tokenFactory.verifyAccessToken(anyString())).thenReturn(mock(DecodedJWT.class));
+  }
 
   @Test
   void shouldReturnLoggedInTokens() {
@@ -60,7 +71,6 @@ public class AuthHandlerTest {
     TokenCreationRequestDTO tokenCreationRequestDTO =
         new TokenCreationRequestDTO("foo@bar.com", "secret");
 
-    ErrorDTO expected = new ErrorDTO("Invalid user given");
     this.webTestClient
         .post()
         .uri("/auth/token")
@@ -69,9 +79,7 @@ public class AuthHandlerTest {
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()
-        .is4xxClientError()
-        .expectBody(ErrorDTO.class)
-        .value(response -> assertEquals(expected, response));
+        .isBadRequest();
   }
 
   @Test

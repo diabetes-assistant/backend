@@ -3,19 +3,25 @@ package com.github.diabetesassistant.user.presentation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.github.diabetesassistant.core.presentation.ErrorDTO;
+import com.github.diabetesassistant.core.presentation.SecurityConfig;
+import com.github.diabetesassistant.core.presentation.TokenFactory;
 import com.github.diabetesassistant.user.domain.Role;
 import com.github.diabetesassistant.user.domain.User;
 import com.github.diabetesassistant.user.domain.UserService;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -23,10 +29,16 @@ import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = UserHandler.class)
+@Import(SecurityConfig.class)
 public class UserHandlerTest {
   @MockBean private UserService serviceMock;
-
+  @MockBean private TokenFactory tokenFactory;
   @Autowired private WebTestClient webTestClient;
+
+  @BeforeEach
+  void setUp() {
+    when(tokenFactory.verifyAccessToken(anyString())).thenReturn(mock(DecodedJWT.class));
+  }
 
   @Test
   void shouldReturnCreatedUser() {
