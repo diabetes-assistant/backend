@@ -85,7 +85,7 @@ public class SecurityConfig {
     http.formLogin().disable();
     http.csrf().disable();
     http.logout().disable();
-    http.cors().disable();
+    http.cors();
     http.exceptionHandling();
     http.securityContextRepository(NoOpServerSecurityContextRepository.getInstance());
     http.authorizeExchange(
