@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.github.diabetesassistant.core.presentation.ErrorDTO;
@@ -23,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -55,9 +55,9 @@ class PatientHandlerTest {
     List<PatientDTO> expected = List.of(dto);
     String doctorId = UUID.randomUUID().toString();
     this.webTestClient
-        .mutateWith(mockJwt())
         .get()
         .uri("/patient?doctorId=" + doctorId)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()
@@ -70,10 +70,9 @@ class PatientHandlerTest {
   void shouldReturn400ForInvalidDoctorId() {
     String doctorId = "foo";
     this.webTestClient
-        .mutateWith(mockJwt())
         .get()
         .uri("/patient?doctorId=" + doctorId)
-        .header("Authorization", "Bearer ")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()
@@ -83,15 +82,33 @@ class PatientHandlerTest {
   }
 
   @Test
+  void shouldReturn401ForInvalidToken() {
+    when(this.serviceMock.findPatients(any())).thenReturn(Flux.empty());
+
+    List<PatientDTO> expected = Collections.emptyList();
+    String doctorId = UUID.randomUUID().toString();
+    this.webTestClient
+        .get()
+        .uri("/patient?doctorId=" + doctorId)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBodyList(PatientDTO.class)
+        .value(response -> assertEquals(expected, response));
+  }
+
+  @Test
   void shouldReturnEmptyListWhenNothingFound() {
     when(this.serviceMock.findPatients(any())).thenReturn(Flux.empty());
 
     List<PatientDTO> expected = Collections.emptyList();
     String doctorId = UUID.randomUUID().toString();
     this.webTestClient
-        .mutateWith(mockJwt())
         .get()
         .uri("/patient?doctorId=" + doctorId)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()

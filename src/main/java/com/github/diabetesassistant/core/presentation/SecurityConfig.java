@@ -1,30 +1,22 @@
 package com.github.diabetesassistant.core.presentation;
 
-import static com.github.diabetesassistant.core.presentation.TokenFactory.ROLES_CLAIM;
-
 import com.auth0.jwt.interfaces.DecodedJWT;
-import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMessage;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Configuration
@@ -49,65 +41,38 @@ public class SecurityConfig {
   }
 
   @Bean
-  ServerAuthenticationConverter authenticationConverter() {
-    return (ServerWebExchange exchange) -> {
-      Mono<ServerHttpRequest> requestMono = Mono.justOrEmpty(exchange.getRequest());
-      Mono<HttpHeaders> requestHeaders = requestMono.map(HttpMessage::getHeaders);
+  ReactiveAuthorizationManager<AuthorizationContext> authorizationManager(
+      TokenFactory tokenFactory) {
+    return (Mono<Authentication> authenticationMono, AuthorizationContext context) -> {
+      Mono<HttpHeaders> headers = Mono.just(context.getExchange().getRequest().getHeaders());
       Mono<String> authorizationHeader =
-          requestHeaders.mapNotNull(headers -> headers.getFirst(HttpHeaders.AUTHORIZATION));
-      authorizationHeader.map(
-          ah -> {
-            log.info("got token-------> " + ah);
-            return ah;
-          });
-      return authorizationHeader.map(
-          token -> new UsernamePasswordAuthenticationToken(token, token));
+          headers.mapNotNull(httpHeaders -> httpHeaders.getFirst(HttpHeaders.AUTHORIZATION));
+      Mono<DecodedJWT> decodedJWTMono = authorizationHeader.map(tokenFactory::verifyAccessToken);
+      return decodedJWTMono
+          .map(decodedJWT -> new AuthorizationDecision(true))
+          .onErrorResume(
+              exception -> {
+                log.warn("was not able to validate jwt", exception);
+                return Mono.just(new AuthorizationDecision(false));
+              });
     };
   }
 
   @Bean
-  ReactiveAuthenticationManager authenticationManager(TokenFactory tokenFactory) {
-    return (Authentication authentication) -> {
-      Mono<String> jwt = Mono.just(authentication.getCredentials().toString());
-      Mono<DecodedJWT> decodedToken =
-          jwt.map(tokenFactory::verifyAccessToken)
-              .onErrorResume(
-                  (exception) -> {
-                    log.warn("was not able to verify token", exception);
-                    return Mono.empty();
-                  });
-      return decodedToken.map(
-          token -> {
-            String[] rawRoles = token.getClaim(ROLES_CLAIM).asString().split(",");
-            List<SimpleGrantedAuthority> roles =
-                Arrays.stream(rawRoles).map(SimpleGrantedAuthority::new).toList();
-            return new UsernamePasswordAuthenticationToken(
-                token.getSubject(), authentication.getCredentials(), roles);
-          });
-    };
-  }
+  public SecurityWebFilterChain springSecurityFilterChain(
+      ServerHttpSecurity http,
+      ReactiveAuthorizationManager<AuthorizationContext> authorizationManager) {
+    http.httpBasic().disable();
+    http.formLogin().disable();
+    http.csrf().disable();
+    http.logout().disable();
+    http.cors().configurationSource(corsConfigurationSource());
+    http.exceptionHandling();
+    http.securityContextRepository(NoOpServerSecurityContextRepository.getInstance());
+    http.authorizeExchange(
+        exchanges -> exchanges.pathMatchers(NOT_PROTECTED_RESOURCES).permitAll());
+    http.authorizeExchange(exchanges -> exchanges.anyExchange().access(authorizationManager));
 
-  @Order(Ordered.HIGHEST_PRECEDENCE)
-  @Bean
-  public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-    http.cors()
-        .configurationSource(corsConfigurationSource())
-        .and()
-        .csrf()
-        .disable()
-        .authorizeExchange(
-            exchanges ->
-                exchanges
-                    .pathMatchers(NOT_PROTECTED_RESOURCES)
-                    .permitAll()
-                    .anyExchange()
-                    .authenticated())
-        .httpBasic()
-        .disable()
-        .formLogin()
-        .disable()
-        .logout()
-        .disable();
     return http.build();
   }
 }
