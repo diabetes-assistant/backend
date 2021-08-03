@@ -47,6 +47,7 @@ public class SecurityConfig {
         HttpHeaders headers = response.getHeaders();
         headers.add("Access-Control-Allow-Origin", "*");
         headers.add("Access-Control-Allow-Methods", String.join(",", ALLOWED_METHODS));
+        headers.add("Access-Control-Allow-Headers", "*");
         headers.add("Access-Control-Max-Age", MAX_AGE);
 
         if (request.getMethod() == HttpMethod.OPTIONS) {
