@@ -32,7 +32,8 @@ public class SecurityConfig {
   private static final String FRONTEND_LOCALHOST = "localhost";
   private static final String FRONTEND_STAGING = "staging-diabetes-assitant-fe.herokuapp.com";
   private static final String FRONTEND_LIVE = "live-diabetes-assitant-fe.herokuapp.com";
-  private static final List<String> ALLOWED_ORIGINS = List.of(FRONTEND_LOCALHOST, FRONTEND_STAGING, FRONTEND_LIVE);
+  private static final List<String> ALLOWED_ORIGINS =
+      List.of(FRONTEND_LOCALHOST, FRONTEND_STAGING, FRONTEND_LIVE);
   private static final List<String> ALLOWED_METHODS =
       List.of("PUT", "POST", "GET", "OPTION", "DELETE");
   private static final String MAX_AGE = "3600";
