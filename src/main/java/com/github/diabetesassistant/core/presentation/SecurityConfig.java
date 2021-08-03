@@ -30,11 +30,9 @@ import reactor.core.publisher.Mono;
 public class SecurityConfig {
   private static final String[] NOT_PROTECTED_RESOURCES = new String[] {"/user/**", "/auth/**"};
   private static final String FRONTEND_LOCALHOST = "localhost";
-  private static final String FRONTEND_STAGING =
-      "https://staging-diabetes-assitant-fe.herokuapp.com";
-  private static final String FRONTEND_LIVE = "https://live-diabetes-assitant-fe.herokuapp.com";
-  private static final List<String> ALLOWED_ORIGINS =
-      List.of(FRONTEND_LOCALHOST, FRONTEND_STAGING, FRONTEND_LIVE);
+  private static final String FRONTEND_STAGING = "staging-diabetes-assitant-fe.herokuapp.com";
+  private static final String FRONTEND_LIVE = "live-diabetes-assitant-fe.herokuapp.com";
+  private static final List<String> ALLOWED_ORIGINS = List.of(FRONTEND_LOCALHOST, FRONTEND_STAGING, FRONTEND_LIVE);
   private static final List<String> ALLOWED_METHODS =
       List.of("PUT", "POST", "GET", "OPTION", "DELETE");
   private static final String MAX_AGE = "3600";
@@ -45,8 +43,10 @@ public class SecurityConfig {
       ServerHttpRequest request = ctx.getRequest();
       if (CorsUtils.isCorsRequest(request)) {
         ServerHttpResponse response = ctx.getResponse();
+        log.info(request.getPath().toString());
+        log.info(request.getURI().toString());
         HttpHeaders headers = response.getHeaders();
-        headers.add("Access-Control-Allow-Origin", String.join(",", ALLOWED_ORIGINS));
+        headers.add("Access-Control-Allow-Origin", request.getURI().toString());
         headers.add("Access-Control-Allow-Methods", String.join(",", ALLOWED_METHODS));
         headers.add("Access-Control-Max-Age", MAX_AGE);
         if (request.getMethod() == HttpMethod.OPTIONS) {
