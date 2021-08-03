@@ -1,7 +1,7 @@
 plugins {
     application
     java
-    id("io.freefair.lombok") version "6.1.0-m2"
+    id("io.freefair.lombok") version "6.1.0-m3"
     id("org.springframework.boot") version "2.5.3"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("com.github.spotbugs") version "4.7.2"
@@ -32,7 +32,7 @@ val junitVersion = "5.8.0-M1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-//    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.data:spring-data-r2dbc:1.3.3")
     implementation("org.springframework.security:spring-security-crypto:5.5.1")
     implementation("org.bouncycastle:bcpkix-jdk15to18:1.69")
@@ -43,8 +43,8 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-//    testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("io.projectreactor:reactor-test:3.4.7")
+    testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("io.projectreactor:reactor-test:3.4.8")
     testImplementation("org.mockito:mockito-core:3.+")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
