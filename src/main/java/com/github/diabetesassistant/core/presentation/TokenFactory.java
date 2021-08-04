@@ -53,7 +53,12 @@ public class TokenFactory {
       throw new JWTVerificationException("Missing 'Bearer ' prefix");
     }
     String accessToken = authorizationHeader.replace(BEARER_PREFIX, "");
-    JWTVerifier verifier = JWT.require(this.accessTokenAlgorithm).withIssuer(ISSUER).withAudience(CLIENT).acceptLeeway(1337L).build();
+    JWTVerifier verifier =
+        JWT.require(this.accessTokenAlgorithm)
+            .withIssuer(ISSUER)
+            .withAudience(CLIENT)
+            .acceptLeeway(1337L)
+            .build();
     return verifier.verify(accessToken);
   }
 
