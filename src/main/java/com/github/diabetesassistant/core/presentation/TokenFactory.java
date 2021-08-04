@@ -21,6 +21,7 @@ public class TokenFactory {
   private static final long ID_TOKEN_DURATION_IN_HOURS = 24L;
   private static final String ISSUER = "diabetes-assistant-backend";
   private static final String CLIENT = "diabetes-assistant-client";
+  private static final String BEARER_PREFIX = "Bearer ";
   public static final String ROLES_CLAIM = "diabetesAssistant:roles";
   private final Algorithm accessTokenAlgorithm;
   private final Algorithm idTokenAlgorithm;
@@ -47,9 +48,12 @@ public class TokenFactory {
         .sign(this.accessTokenAlgorithm);
   }
 
-  public DecodedJWT verifyAccessToken(String accessToken) throws JWTVerificationException {
-    JWTVerifier verifier =
-        JWT.require(this.accessTokenAlgorithm).withIssuer(ISSUER).acceptLeeway(1).build();
+  public DecodedJWT verifyAccessToken(String authorizationHeader) throws JWTVerificationException {
+    if (!authorizationHeader.startsWith(BEARER_PREFIX)) {
+      throw new JWTVerificationException("Missing 'Bearer ' prefix");
+    }
+    String accessToken = authorizationHeader.replace(BEARER_PREFIX, "");
+    JWTVerifier verifier = JWT.require(this.accessTokenAlgorithm).withIssuer(ISSUER).withAudience(CLIENT).acceptLeeway(1337L).build();
     return verifier.verify(accessToken);
   }
 
@@ -58,8 +62,8 @@ public class TokenFactory {
     ZoneOffset zoneOffset = BERLIN_ZONE.getRules().getOffset(now);
     LocalDateTime expiry = now.plusHours(ID_TOKEN_DURATION_IN_HOURS);
     return JWT.create()
-        .withIssuer("diabetes-assistant-backend")
-        .withAudience("diabetes-assistant-client")
+        .withIssuer(ISSUER)
+        .withAudience(CLIENT)
         .withSubject(userId)
         .withClaim("email", email)
         .withExpiresAt(Date.from(expiry.toInstant(zoneOffset)))

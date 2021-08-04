@@ -5,5 +5,5 @@ db:
   load_from_environment: true
 
 auth:
-  accessTokenSecret: ${JWT_AUTH_SECRET:"auth-secret"}
-  idTokenSecret: ${JWT_ID_SECRET:"id-secret"}
+  accessTokenSecret: ${JWT_AUTH_SECRET:foobar}
+  idTokenSecret: ${JWT_ID_SECRET:id-secret}
