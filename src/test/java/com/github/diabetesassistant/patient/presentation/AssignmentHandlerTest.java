@@ -9,6 +9,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.github.diabetesassistant.core.presentation.SecurityConfig;
 import com.github.diabetesassistant.core.presentation.TokenFactory;
 import com.github.diabetesassistant.patient.domain.*;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,8 @@ public class AssignmentHandlerTest {
     String code = "foobar";
     Patient patient = new Patient(UUID.randomUUID(), "foo@bar.com");
     Doctor doctor = new Doctor(UUID.randomUUID(), "foo@bar.com");
-    Assignment assignment = new Assignment(code, doctor, patient, "initial");
+    Assignment assignment =
+        new Assignment(code, Optional.of(doctor), Optional.of(patient), "initial");
     when(this.serviceMock.findAssignment(code)).thenReturn(Mono.just(assignment));
     String loggedInUserId = UUID.randomUUID().toString();
     when(decodedJWTMock.getSubject()).thenReturn(loggedInUserId);
@@ -51,7 +53,8 @@ public class AssignmentHandlerTest {
     PatientDTO patientDTO = new PatientDTO(patient.id().toString(), patient.email());
     DoctorDTO doctorDTO = new DoctorDTO(doctor.id().toString(), doctor.email());
     AssignmentDTO expected =
-        new AssignmentDTO(assignment.code(), doctorDTO, patientDTO, assignment.state());
+        new AssignmentDTO(
+            assignment.code(), Optional.of(doctorDTO), Optional.of(patientDTO), assignment.state());
 
     this.webTestClient
         .get()

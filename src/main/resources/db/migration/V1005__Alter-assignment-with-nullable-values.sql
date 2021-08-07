@@ -1,0 +1,2 @@
+ALTER TABLE assignments ALTER COLUMN doctorid DROP NOT NULL;
+ALTER TABLE assignments ALTER COLUMN patientid DROP NOT NULL;

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
 @Repository
-public interface AssignmentRepository extends ReactiveCrudRepository<AssignmentEntity, UUID> {
+public interface AssignmentRepository extends ReactiveCrudRepository<AssignmentEntity, String> {
   @Query("SELECT * FROM assignments where doctorId = :doctorId and state = 'confirmed'")
   Flux<AssignmentEntity> findByDoctorId(UUID doctorId);
 }

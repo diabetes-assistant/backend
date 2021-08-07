@@ -20,7 +20,7 @@ public class AssignmentRepositoryTest extends DatabaseTest {
     UUID doctorId = UUID.randomUUID();
     UUID patientId = UUID.randomUUID();
     String query =
-        "INSERT INTO assignments (code, doctorId, patientId, state) VALUES ('foo', '"
+        "INSERT INTO assignments (code, doctorId, patientId, state) VALUES ('foobar', '"
             + doctorId
             + "', '"
             + patientId
@@ -29,7 +29,24 @@ public class AssignmentRepositoryTest extends DatabaseTest {
     statement.close();
 
     Flux<AssignmentEntity> actual = this.repository.findByDoctorId(doctorId);
-    AssignmentEntity expected = new AssignmentEntity("foo", doctorId, patientId, "confirmed");
+    AssignmentEntity expected = new AssignmentEntity("foobar", doctorId, patientId, "confirmed");
+
+    StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
+  }
+
+  @Test
+  void shouldFindAssignmentByDoctorIdWithEmptyValues() throws SQLException {
+    Statement statement = connection.createStatement();
+    UUID doctorId = UUID.randomUUID();
+    String query =
+        "INSERT INTO assignments (code, doctorId, patientId, state) VALUES ('foo', '"
+            + doctorId
+            + "', NULL, 'confirmed')";
+    statement.execute(query);
+    statement.close();
+
+    Flux<AssignmentEntity> actual = this.repository.findByDoctorId(doctorId);
+    AssignmentEntity expected = new AssignmentEntity("foo", doctorId, null, "confirmed");
 
     StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
   }

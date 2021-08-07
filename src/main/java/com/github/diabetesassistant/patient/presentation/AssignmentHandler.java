@@ -4,6 +4,7 @@ import com.github.diabetesassistant.patient.domain.Assignment;
 import com.github.diabetesassistant.patient.domain.AssignmentService;
 import com.github.diabetesassistant.patient.domain.Doctor;
 import com.github.diabetesassistant.patient.domain.Patient;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,8 +29,8 @@ public class AssignmentHandler {
   }
 
   private AssignmentDTO toDTO(Assignment assignment) {
-    DoctorDTO doctor = toDTO(assignment.doctor());
-    PatientDTO patient = toDTO(assignment.patient());
+    Optional<DoctorDTO> doctor = assignment.doctor().map(this::toDTO);
+    Optional<PatientDTO> patient = assignment.patient().map(this::toDTO);
     return new AssignmentDTO(assignment.code(), doctor, patient, assignment.state());
   }
 

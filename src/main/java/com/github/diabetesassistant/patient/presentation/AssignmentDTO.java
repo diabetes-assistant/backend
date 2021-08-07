@@ -1,3 +1,6 @@
 package com.github.diabetesassistant.patient.presentation;
 
-public record AssignmentDTO(String code, DoctorDTO doctor, PatientDTO patient, String state) {}
+import java.util.Optional;
+
+public record AssignmentDTO(
+    String code, Optional<DoctorDTO> doctor, Optional<PatientDTO> patient, String state) {}
