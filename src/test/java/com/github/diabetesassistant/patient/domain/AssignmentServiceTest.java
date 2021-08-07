@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -59,5 +60,34 @@ class AssignmentServiceTest {
         new Assignment(code, Optional.empty(), Optional.empty(), assignment.state());
 
     StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
+  }
+
+  @Test
+  void shouldReturnCreatedAssignment() {
+    UUID doctorId = UUID.randomUUID();
+    AssignmentEntity assignment = new AssignmentEntity("foobar", doctorId, null, "initial");
+    when(this.assignmentRepository.save(any())).thenReturn(Mono.just(assignment));
+    UserEntity doctorEntity = new UserEntity(doctorId, "foo@bar.com", "secret", "doctor");
+    when(this.userRepository.findById(doctorId)).thenReturn(Mono.just(doctorEntity));
+
+    Mono<Assignment> actual = this.testee.createAssignment(doctorId);
+    Doctor doctor = new Doctor(doctorId, doctorEntity.email());
+    Assignment expected =
+        new Assignment(
+            assignment.code(), Optional.of(doctor), Optional.empty(), assignment.state());
+
+    StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
+  }
+
+  @Test
+  void shouldReturnExceptionWhenCreatingForNonExistantDoctor() {
+    UUID doctorId = UUID.randomUUID();
+    AssignmentEntity assignment = new AssignmentEntity("foobar", doctorId, null, "initial");
+    when(this.assignmentRepository.save(any())).thenReturn(Mono.just(assignment));
+    when(this.userRepository.findById(doctorId)).thenReturn(Mono.empty());
+
+    Mono<Assignment> actual = this.testee.createAssignment(doctorId);
+
+    StepVerifier.create(actual.log()).expectError(ResponseStatusException.class).verify();
   }
 }

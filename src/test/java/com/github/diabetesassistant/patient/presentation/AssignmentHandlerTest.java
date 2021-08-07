@@ -1,6 +1,7 @@
 package com.github.diabetesassistant.patient.presentation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -83,5 +84,53 @@ public class AssignmentHandlerTest {
         .exchange()
         .expectStatus()
         .isNotFound();
+  }
+
+  @Test
+  void shouldReturn200CreatedAssignment() {
+    String loggedInUserId = UUID.randomUUID().toString();
+    when(decodedJWTMock.getSubject()).thenReturn(loggedInUserId);
+    String doctorId = UUID.randomUUID().toString();
+    Assignment assignment = new Assignment("foobar", Optional.empty(), Optional.empty(), "initial");
+    when(this.serviceMock.createAssignment(any())).thenReturn(Mono.just(assignment));
+
+    AssignmentDTO expected =
+        new AssignmentDTO(
+            assignment.code(), Optional.empty(), Optional.empty(), assignment.state());
+
+    this.webTestClient
+        .post()
+        .uri("/assignment")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            Mono.just(new AssignmentCreationRequestDTO(doctorId)),
+            AssignmentCreationRequestDTO.class)
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(AssignmentDTO.class)
+        .value(response -> assertEquals(expected, response));
+  }
+
+  @Test
+  void shouldReturn400WhenCreatingAssignmentForInvalidDoctorId() {
+    String loggedInUserId = UUID.randomUUID().toString();
+    when(decodedJWTMock.getSubject()).thenReturn(loggedInUserId);
+    String doctorId = "foo";
+
+    this.webTestClient
+        .post()
+        .uri("/assignment")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            Mono.just(new AssignmentCreationRequestDTO(doctorId)),
+            AssignmentCreationRequestDTO.class)
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isBadRequest();
   }
 }

@@ -5,6 +5,7 @@ import com.github.diabetesassistant.patient.domain.AssignmentService;
 import com.github.diabetesassistant.patient.domain.Doctor;
 import com.github.diabetesassistant.patient.domain.Patient;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -44,5 +45,18 @@ public class AssignmentHandler {
                 Mono.error(
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found")));
     return maybeAssignment.map(this::toDTO);
+  }
+
+  private ResponseStatusException badRequest(Throwable exception) {
+    log.warn("invalid doctorid given", exception);
+    return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid doctorid given", exception);
+  }
+
+  @PostMapping
+  public Mono<AssignmentDTO> createAssignmentWithCode(
+      @RequestBody AssignmentCreationRequestDTO dto) {
+    Mono<UUID> doctorId =
+        Mono.just(dto.doctorId()).map(UUID::fromString).onErrorMap(this::badRequest);
+    return doctorId.flatMap(this.assignmentService::createAssignment).map(this::toDTO);
   }
 }
