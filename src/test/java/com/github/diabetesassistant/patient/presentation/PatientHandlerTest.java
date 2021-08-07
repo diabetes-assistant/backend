@@ -82,6 +82,23 @@ class PatientHandlerTest {
   }
 
   @Test
+  void shouldReturn400ForNonExistingDoctorId() {
+    String doctorId = "foo";
+    when(serviceMock.findPatients(any()))
+        .thenReturn(Flux.error(new IllegalArgumentException("Not found")));
+    this.webTestClient
+        .get()
+        .uri("/patient?doctorId=" + doctorId)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody(ErrorDTO.class)
+        .value(response -> assertEquals(ErrorDTO.class, response.getClass()));
+  }
+
+  @Test
   void shouldReturn401ForInvalidToken() {
     when(this.serviceMock.findPatients(any())).thenReturn(Flux.empty());
 

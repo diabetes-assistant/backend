@@ -42,7 +42,7 @@ public class AuthHandler {
         .map(this::toDTO)
         .switchIfEmpty(
             Mono.error(
-                new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid doctorId given")));
+                new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid doctorid given")));
   }
 
   private TokenDTO toDTO(Tokens tokens) throws JWTCreationException {

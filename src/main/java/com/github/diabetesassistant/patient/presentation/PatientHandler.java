@@ -26,19 +26,20 @@ public class PatientHandler {
     return new PatientDTO(patient.id().toString(), patient.email());
   }
 
+  private ResponseStatusException badRequest(Throwable exception) {
+    log.warn("invalid doctorid given", exception);
+    return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid doctorid given", exception);
+  }
+
   @GetMapping
   public Flux<PatientDTO> getPatients(@RequestParam("doctorId") String doctorId) {
     log.info("got get patients request");
     Flux<UUID> doctorIdFlux =
-        Flux.just(doctorId)
-            .map(UUID::fromString)
-            .onErrorMap(
-                (exception) -> {
-                  log.warn("invalid doctorId given", exception);
-                  return new ResponseStatusException(
-                      HttpStatus.BAD_REQUEST, "Invalid doctorId given", exception);
-                });
-    Flux<Patient> patients = doctorIdFlux.flatMap(patientService::findPatients);
+        Flux.just(doctorId).map(UUID::fromString).onErrorMap(this::badRequest);
+    Flux<Patient> patients =
+        doctorIdFlux
+            .flatMap(patientService::findPatients)
+            .onErrorMap(IllegalArgumentException.class, this::badRequest);
     return patients.map(this::toDTO);
   }
 }
