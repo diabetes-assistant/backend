@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -45,6 +46,16 @@ public class AssignmentHandler {
                 Mono.error(
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found")));
     return maybeAssignment.map(this::toDTO);
+  }
+
+  @GetMapping
+  public Flux<AssignmentDTO> getAssignmentWithDoctorIdAndState(
+      @RequestParam("doctorId") String doctorId, @RequestParam("state") String state) {
+    log.info("got get assignments with doctorId and state request");
+    Mono<UUID> doctorUUID = Mono.just(doctorId).map(UUID::fromString).onErrorMap(this::badRequest);
+    Flux<Assignment> foundAssignments =
+        doctorUUID.flatMapMany(doctor -> this.assignmentService.findAssignments(doctor, state));
+    return foundAssignments.map(this::toDTO);
   }
 
   private ResponseStatusException badRequest(Throwable exception) {

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
@@ -80,5 +81,14 @@ public class AssignmentService {
     Mono<AssignmentEntity> createdAssignmentEntity =
         this.assignmentRepository.save(assignmentEntity);
     return createdAssignmentEntity.zipWith(doctorEntity).map(this::toAssignmentWithDoctor);
+  }
+
+  public Flux<Assignment> findAssignments(UUID doctorId, String state) {
+    Flux<String> codes =
+        this.assignmentRepository
+            .findByDoctorId(doctorId)
+            .filter(assignment -> assignment.state().equals(state))
+            .map(AssignmentEntity::code);
+    return codes.flatMap(this::findAssignment);
   }
 }

@@ -10,6 +10,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.github.diabetesassistant.core.presentation.SecurityConfig;
 import com.github.diabetesassistant.core.presentation.TokenFactory;
 import com.github.diabetesassistant.patient.domain.*;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
@@ -67,6 +69,48 @@ public class AssignmentHandlerTest {
         .isOk()
         .expectBody(AssignmentDTO.class)
         .value(response -> assertEquals(expected, response));
+  }
+
+  @Test
+  void shouldReturnSpecificAssignmentByDoctorIdAndState() {
+    String state = "initial";
+    UUID doctorId = UUID.randomUUID();
+    Doctor doctor = new Doctor(doctorId, "foo@bar.com");
+    Assignment assignment = new Assignment("foobar", Optional.of(doctor), Optional.empty(), state);
+    when(this.serviceMock.findAssignments(doctorId, state)).thenReturn(Flux.just(assignment));
+    String loggedInUserId = UUID.randomUUID().toString();
+    when(decodedJWTMock.getSubject()).thenReturn(loggedInUserId);
+
+    DoctorDTO doctorDTO = new DoctorDTO(doctor.id().toString(), doctor.email());
+    AssignmentDTO expected =
+        new AssignmentDTO(
+            assignment.code(), Optional.of(doctorDTO), Optional.empty(), assignment.state());
+
+    this.webTestClient
+        .get()
+        .uri("/assignment?doctorId=" + doctorId + "&state=initial")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBodyList(AssignmentDTO.class)
+        .value(response -> assertEquals(List.of(expected), response));
+  }
+
+  @Test
+  void shouldReturn400ForInvalidDoctorIdWhenGettingSpecificAssignment() {
+    String loggedInUserId = UUID.randomUUID().toString();
+    when(decodedJWTMock.getSubject()).thenReturn(loggedInUserId);
+
+    this.webTestClient
+        .get()
+        .uri("/assignment?doctorId=foobar&state=initial")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isBadRequest();
   }
 
   @Test
