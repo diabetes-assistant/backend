@@ -25,7 +25,8 @@ public class PatientService {
             .findById(doctorId)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("User not found")));
     Flux<AssignmentEntity> assignments =
-        maybeDoctor.flatMapMany(doctor -> this.assignmentRepository.findByDoctorId(doctor.id()));
+        maybeDoctor.flatMapMany(
+            doctor -> this.assignmentRepository.findByDoctorId(doctor.id(), "confirmed"));
     Flux<UUID> patientIds = assignments.map(AssignmentEntity::patientid);
     Flux<UserEntity> users = patientIds.flatMap(userRepository::findById);
     return users.map(user -> new Patient(user.id(), user.email()));

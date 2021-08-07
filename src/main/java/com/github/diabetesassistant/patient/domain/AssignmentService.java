@@ -85,10 +85,7 @@ public class AssignmentService {
 
   public Flux<Assignment> findAssignments(UUID doctorId, String state) {
     Flux<String> codes =
-        this.assignmentRepository
-            .findByDoctorId(doctorId)
-            .filter(assignment -> assignment.state().equals(state))
-            .map(AssignmentEntity::code);
+        this.assignmentRepository.findByDoctorId(doctorId, state).map(AssignmentEntity::code);
     return codes.flatMap(this::findAssignment);
   }
 }

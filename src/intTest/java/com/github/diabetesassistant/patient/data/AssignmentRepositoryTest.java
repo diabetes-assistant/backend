@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @SpringBootTest
@@ -28,7 +29,7 @@ public class AssignmentRepositoryTest extends DatabaseTest {
     statement.execute(query);
     statement.close();
 
-    Flux<AssignmentEntity> actual = this.repository.findByDoctorId(doctorId);
+    Flux<AssignmentEntity> actual = this.repository.findByDoctorId(doctorId, "confirmed");
     AssignmentEntity expected = new AssignmentEntity("foobar", doctorId, patientId, "confirmed");
 
     StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
@@ -45,8 +46,20 @@ public class AssignmentRepositoryTest extends DatabaseTest {
     statement.execute(query);
     statement.close();
 
-    Flux<AssignmentEntity> actual = this.repository.findByDoctorId(doctorId);
+    Flux<AssignmentEntity> actual = this.repository.findByDoctorId(doctorId, "confirmed");
     AssignmentEntity expected = new AssignmentEntity("foo", doctorId, null, "confirmed");
+
+    StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
+  }
+
+  @Test
+  void shouldFindCreatedAssignment() {
+    UUID doctorId = UUID.randomUUID();
+    AssignmentEntity assignmentEntity = new AssignmentEntity("foobar", doctorId, null, "initial");
+    this.repository.save(assignmentEntity).block();
+
+    Mono<AssignmentEntity> actual = this.repository.findById("foobar");
+    AssignmentEntity expected = assignmentEntity;
 
     StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
   }

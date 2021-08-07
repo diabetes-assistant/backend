@@ -34,7 +34,8 @@ class PatientServiceTest {
     UUID doctorId = UUID.randomUUID();
     UUID patientId = UUID.randomUUID();
     AssignmentEntity assignment = new AssignmentEntity("code", doctorId, patientId, "initial");
-    when(this.assignmentRepository.findByDoctorId(doctorId)).thenReturn(Flux.just(assignment));
+    when(this.assignmentRepository.findByDoctorId(doctorId, "confirmed"))
+        .thenReturn(Flux.just(assignment));
     UserEntity patient = new UserEntity(patientId, "patient@email.com", "secret", "patient");
     when(this.userRepository.findById(patientId)).thenReturn(Mono.just(patient));
     UserEntity doctor = new UserEntity(doctorId, "doctor@email.com", "secret", "doctor");
@@ -54,6 +55,6 @@ class PatientServiceTest {
     Flux<Patient> actual = this.testee.findPatients(doctorId);
 
     StepVerifier.create(actual.log()).expectError(IllegalArgumentException.class).verify();
-    verify(this.assignmentRepository, times(0)).findByDoctorId(any());
+    verify(this.assignmentRepository, times(0)).findByDoctorId(any(), any());
   }
 }

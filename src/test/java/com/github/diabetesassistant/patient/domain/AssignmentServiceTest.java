@@ -99,7 +99,8 @@ class AssignmentServiceTest {
     UserEntity doctorEntity = new UserEntity(doctorId, "doctor@email.com", "secret", "doctor");
     when(this.userRepository.findById(doctorId)).thenReturn(Mono.just(doctorEntity));
     AssignmentEntity assignment = new AssignmentEntity(code, doctorId, null, "initial");
-    when(this.assignmentRepository.findByDoctorId(doctorId)).thenReturn(Flux.just(assignment));
+    when(this.assignmentRepository.findByDoctorId(doctorId, "initial"))
+        .thenReturn(Flux.just(assignment));
     when(this.assignmentRepository.findById(assignment.code())).thenReturn(Mono.just(assignment));
 
     Flux<Assignment> actual = this.testee.findAssignments(doctorId, "initial");
@@ -112,10 +113,8 @@ class AssignmentServiceTest {
 
   @Test
   void shouldReturnEmptyForNotExistingState() {
-    String code = "foobar";
     UUID doctorId = UUID.randomUUID();
-    AssignmentEntity assignment = new AssignmentEntity(code, doctorId, null, "foobar");
-    when(this.assignmentRepository.findByDoctorId(doctorId)).thenReturn(Flux.just(assignment));
+    when(this.assignmentRepository.findByDoctorId(doctorId, "initial")).thenReturn(Flux.empty());
 
     Flux<Assignment> actual = this.testee.findAssignments(doctorId, "initial");
 

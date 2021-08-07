@@ -8,6 +8,6 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface AssignmentRepository extends ReactiveCrudRepository<AssignmentEntity, String> {
-  @Query("SELECT * FROM assignments where doctorId = :doctorId and state = 'confirmed'")
-  Flux<AssignmentEntity> findByDoctorId(UUID doctorId);
+  @Query("SELECT * FROM assignments where doctorId = :doctorId and state = :state")
+  Flux<AssignmentEntity> findByDoctorId(UUID doctorId, String state);
 }
