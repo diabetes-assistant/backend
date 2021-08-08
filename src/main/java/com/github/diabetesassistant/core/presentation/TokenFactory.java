@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class TokenFactory {
   private static final ZoneId BERLIN_ZONE = ZoneId.of("Europe/Berlin");
   private static final long ACCESS_TOKEN_DURATION_IN_HOURS = 10L;
-  private static final long ID_TOKEN_DURATION_IN_HOURS = 24L;
+  private static final long ID_TOKEN_DURATION_IN_HOURS = 10L;
   private static final String ISSUER = "diabetes-assistant-backend";
   private static final String CLIENT = "diabetes-assistant-client";
   private static final String BEARER_PREFIX = "Bearer ";
