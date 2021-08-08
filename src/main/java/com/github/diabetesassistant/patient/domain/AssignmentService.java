@@ -94,6 +94,8 @@ public class AssignmentService {
     UUID patientId = assignment.doctor().map(Doctor::id).orElse(null);
     AssignmentEntity entity =
         new AssignmentEntity(assignment.code(), doctorId, patientId, assignment.state());
+    log.info("saving entity:");
+    log.info(entity.toString());
     return this.assignmentRepository.save(entity).map(_1 -> assignment);
   }
 }
