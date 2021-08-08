@@ -88,4 +88,12 @@ public class AssignmentService {
         this.assignmentRepository.findByDoctorId(doctorId, state).map(AssignmentEntity::code);
     return codes.flatMap(this::findAssignment);
   }
+
+  public Mono<Assignment> confirm(Assignment assignment) {
+    UUID doctorId = assignment.doctor().map(Doctor::id).orElse(null);
+    UUID patientId = assignment.doctor().map(Doctor::id).orElse(null);
+    AssignmentEntity entity =
+        new AssignmentEntity(assignment.code(), doctorId, patientId, assignment.state());
+    return this.assignmentRepository.save(entity).map(_1 -> assignment);
+  }
 }

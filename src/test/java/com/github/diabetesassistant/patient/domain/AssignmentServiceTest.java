@@ -120,4 +120,17 @@ class AssignmentServiceTest {
 
     StepVerifier.create(actual.log()).verifyComplete();
   }
+
+  @Test
+  void shouldReturnUpdatedAssignment() {
+    String code = "foobar";
+    AssignmentEntity updateAssignment = new AssignmentEntity(code, null, null, "initial");
+    when(this.assignmentRepository.save(any())).thenReturn(Mono.just(updateAssignment));
+    Assignment assignment = new Assignment(code, Optional.empty(), Optional.empty(), "initial");
+
+    Mono<Assignment> actual = this.testee.confirm(assignment);
+    Assignment expected = assignment;
+
+    StepVerifier.create(actual.log()).expectNext(expected).verifyComplete();
+  }
 }

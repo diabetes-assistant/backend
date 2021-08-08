@@ -177,4 +177,48 @@ public class AssignmentHandlerTest {
         .expectStatus()
         .isBadRequest();
   }
+
+  @Test
+  void shouldReturnUpdatedAssignment() {
+    String loggedInUserId = UUID.randomUUID().toString();
+    when(decodedJWTMock.getSubject()).thenReturn(loggedInUserId);
+    AssignmentDTO dto = new AssignmentDTO("foobar", Optional.empty(), Optional.empty(), "initial");
+    Assignment updatedAssignment =
+        new Assignment(dto.code(), Optional.empty(), Optional.empty(), dto.state());
+    when(serviceMock.confirm(any())).thenReturn(Mono.just(updatedAssignment));
+    when(serviceMock.findAssignment(any())).thenReturn(Mono.just(updatedAssignment));
+
+    AssignmentDTO expected = dto;
+    this.webTestClient
+        .put()
+        .uri("/assignment/" + dto.code())
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(Mono.just(dto), AssignmentDTO.class)
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(AssignmentDTO.class)
+        .value(response -> assertEquals(expected, response));
+  }
+
+  @Test
+  void shouldReturn404WhenUpdatingInvalidAssignment() {
+    String loggedInUserId = UUID.randomUUID().toString();
+    when(decodedJWTMock.getSubject()).thenReturn(loggedInUserId);
+    AssignmentDTO dto = new AssignmentDTO("foobar", Optional.empty(), Optional.empty(), "initial");
+    when(serviceMock.findAssignment(any())).thenReturn(Mono.empty());
+
+    this.webTestClient
+        .put()
+        .uri("/assignment/" + dto.code())
+        .header(HttpHeaders.AUTHORIZATION, "Bearer asdasd")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(Mono.just(dto), AssignmentDTO.class)
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isNotFound();
+  }
 }

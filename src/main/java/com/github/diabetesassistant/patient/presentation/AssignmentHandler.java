@@ -36,6 +36,16 @@ public class AssignmentHandler {
     return new AssignmentDTO(assignment.code(), doctor, patient, assignment.state());
   }
 
+  private Assignment toAssignment(AssignmentDTO dto) {
+    Optional<Doctor> doctor =
+        dto.doctor()
+            .map(doctorDTO -> new Doctor(UUID.fromString(doctorDTO.id()), doctorDTO.email()));
+    Optional<Patient> patient =
+        dto.patient()
+            .map(patientDTO -> new Patient(UUID.fromString(patientDTO.id()), patientDTO.email()));
+    return new Assignment(dto.code(), doctor, patient, dto.state());
+  }
+
   @GetMapping("/{code}")
   public Mono<AssignmentDTO> getAssignmentWithCode(@PathVariable("code") String code) {
     log.info("got get assignments with code request");
@@ -46,6 +56,22 @@ public class AssignmentHandler {
                 Mono.error(
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found")));
     return maybeAssignment.map(this::toDTO);
+  }
+
+  @PutMapping("/{code}")
+  public Mono<AssignmentDTO> putAssignment(
+      @PathVariable("code") String code, @RequestBody AssignmentDTO dto) {
+    log.info("got put assignments with code request");
+    Mono<Assignment> maybeAssignment =
+        this.assignmentService
+            .findAssignment(code)
+            .switchIfEmpty(
+                Mono.error(
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found")));
+    Assignment assignment = toAssignment(dto);
+    return maybeAssignment
+        .flatMap(_1 -> this.assignmentService.confirm(assignment))
+        .map(this::toDTO);
   }
 
   @GetMapping
