@@ -68,7 +68,11 @@ public class AssignmentHandler {
             .switchIfEmpty(
                 Mono.error(
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found")));
+    log.info("got dto:");
+    log.info(dto.toString());
     Assignment assignment = toAssignment(dto);
+    log.info("transformed to domain object:");
+    log.info(assignment.toString());
     return maybeAssignment
         .flatMap(_1 -> this.assignmentService.confirm(assignment))
         .map(this::toDTO);
